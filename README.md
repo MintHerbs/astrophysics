@@ -13,10 +13,26 @@ the dataset and how to fetch them when you want them.
 
 ## What the script does
 
-[`build_dataset.py`](build_dataset.py) makes **two clearly separated queries**
-against the [MAST](https://mast.stsci.edu/) archive via `astroquery.mast` and
-writes two CSV files. It **does not download any FITS data** — it builds the
-metadata catalogue and prints a volume summary.
+[`app.py`](app.py) runs the [`dataset_builder/`](dataset_builder/) pipeline,
+making **two clearly separated queries** against the
+[MAST](https://mast.stsci.edu/) archive via `astroquery.mast` and writing two
+CSV files. It **does not download any FITS data** — it builds the metadata
+catalogue and prints a volume summary.
+
+The logic is split into ordered modules (numbered by pipeline flow):
+
+```
+app.py                     # thin entry point: runs the steps in order
+dataset_builder/
+  __init__.py              # loads the numbered modules under clean names
+  01_config.py             # constants: instrument modes, selectors, paths
+  02_api_call.py           # the MAST queries (SET A and SET B)
+  03_filter.py             # filtering to calibrated science spectra
+  04_catalogue.py          # building the two dataframes
+  05_summary.py            # the console summary (counts, GB by instrument)
+  06_write_csv.py          # writing the two CSVs (lock-resilient)
+  07_download.py           # the commented-out download function
+```
 
 | Set | `obs_collection` | What it is |
 |-----|------------------|------------|
@@ -86,7 +102,7 @@ deliberately different — this is documented, not a silent work-around:
 
 **Therefore the time-series-mode selector used is `dataproduct_type =
 "timeseries"`.** If a future MAST data release adds a real observing-mode field,
-update `TIMESERIES_TYPE` / `NIR_TSO_MODES` near the top of `build_dataset.py`.
+update `TIMESERIES_TYPE` / `NIR_TSO_MODES` in `dataset_builder/01_config.py`.
 
 ---
 
@@ -134,7 +150,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # 3. Build the catalogue (no downloads — metadata only)
-python build_dataset.py
+python app.py
 ```
 
 The script prints a summary to the console (unique planets, observation count,
@@ -183,10 +199,10 @@ Join the two tables on `dataset_files.parent_obsid == dataset_catalogue.obsid`.
 
 ## Downloading the actual FITS data (off by default)
 
-Downloading is intentionally **disabled**. `build_dataset.py` includes a
-commented-out `download_products()` function. To fetch the data later:
+Downloading is intentionally **disabled**. `dataset_builder/07_download.py`
+holds a commented-out `download_products()` function. To fetch the data later:
 
-1. Uncomment `download_products` and its call in `main()`.
+1. Uncomment `download_products`, import it in `app.py`, and call it in `main()`.
 2. Point `download_dir` at a location **outside** the repo, or at one of the
    git-ignored folders (`data/`, `mastDownload/`, `downloads/`).
 3. Re-run the script. **Expect 50–200 GB.**
