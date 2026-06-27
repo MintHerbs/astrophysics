@@ -1,0 +1,58 @@
+# ==========================================================================
+# .gitignore for the JWST technosignature dataset project
+#
+# GOLDEN RULE: only code and the CSV catalogues belong in this repo.
+# The raw/reduced spectra are 50-200 GB and must NEVER be committed.
+# ==========================================================================
+
+# --- Python virtual environments -----------------------------------------
+venv/
+.venv/
+env/
+ENV/
+
+# --- Downloaded FITS data (the big stuff) ---------------------------------
+# These are the folders/file types the download function would write to.
+data/
+mastDownload/          # astroquery's default download directory name
+downloads/
+*.fits
+*.fits.gz
+*.fit
+*.fz
+*.asdf                 # JWST also distributes ASDF data products
+
+# --- Other large binary / archive formats (belt and braces) ---------------
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.pkl
+*.parquet
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# --- Python build / cache artefacts ---------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+build/
+dist/
+
+# --- Editor / OS noise -----------------------------------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Run artefacts ---------------------------------------------------------
+run.log
+
+# ==========================================================================
+# NOTE: dataset_catalogue.csv and dataset_files.csv are intentionally NOT
+# ignored -- they are the deliverables and must be tracked. The CSVs are
+# small text files (metadata only); they contain no FITS payloads.
+# ==========================================================================
