@@ -4,3 +4,6 @@
 astroquery==0.4.11
 pandas==3.0.3
 numpy==2.4.6
+
+# Plotting (dataset_viz / visualize.py).
+matplotlib==3.11.0

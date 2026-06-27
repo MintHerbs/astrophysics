@@ -51,6 +51,9 @@ Thumbs.db
 # --- Run artefacts ---------------------------------------------------------
 run.log
 
+# --- Generated plots (regenerable output -- keep the repo code-only) --------
+dataset_viz/figures/
+
 # ==========================================================================
 # NOTE: dataset_catalogue.csv and dataset_files.csv are intentionally NOT
 # ignored -- they are the deliverables and must be tracked. The CSVs are

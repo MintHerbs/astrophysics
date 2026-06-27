@@ -212,7 +212,26 @@ usual locations and extensions, but stay alert.
 
 ---
 
+## Visualizing the dataset
+
+[`visualize.py`](visualize.py) runs the [`dataset_viz/`](dataset_viz/) package,
+which reads the two CSVs and writes health/overview plots (matplotlib only) into
+`dataset_viz/figures/` at 150 dpi:
+
+```bash
+python visualize.py
+```
+
+Generates per-instrument bars (observations, GB, unique targets), an
+exposure-time histogram (very short exposures flagged), a top-30 files-per-target
+bar, a release-date timeline, and a combined `summary.png`. If an expected column
+is missing it prints a note and skips just that plot. The PNGs are regenerable
+output and are **git-ignored** — only the plotting code is committed.
+
+---
+
 ## Requirements
 
 See [`requirements.txt`](requirements.txt): `astroquery`, `pandas`, `numpy`
-(astropy and friends come in as transitive dependencies). Tested on Python 3.11.
+(astropy and friends come in as transitive dependencies) plus `matplotlib` for
+the plots. Tested on Python 3.11.
