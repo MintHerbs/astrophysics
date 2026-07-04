@@ -1,237 +1,128 @@
-# JWST NIR Exoplanet Transmission-Spectroscopy Dataset
+# A Machine Learning Search for Technosignature and Biosignature Gases in the JWST Archive
 
-Tooling to **define and catalogue** the JWST near-infrared exoplanet
-transmission-spectroscopy dataset used by a machine-learning pipeline that
-searches transmission spectra for industrial technosignature gases.
+A reproducible, archive-only research pipeline that searches the James Webb Space Telescope (JWST)
+exoplanet transmission-spectroscopy archive for industrial technosignature gases and selected
+gaseous biosignatures, and reports the first empirical, quantitative upper limits on their
+atmospheric abundances.
 
-This repo contains **code and CSV catalogues only**. The raw/reduced spectra
-themselves are **50–200 GB** and are *never* committed here (see
-[`.gitignore`](.gitignore)). The catalogue tells you exactly which files make up
-the dataset and how to fetch them when you want them.
+Research proposal by Munazir Ramjhun, Atish Joottun, and Tanoo Joyekurun, University of Mauritius,
+Faculty of Information, Communication and Digital Technologies.
 
----
+## Goal
 
-## What the script does
+Produce two things:
 
-[`app.py`](app.py) runs the [`dataset_builder/`](dataset_builder/) pipeline,
-making **two clearly separated queries** against the
-[MAST](https://mast.stsci.edu/) archive via `astroquery.mast` and writing two
-CSV files. It **does not download any FITS data** — it builds the metadata
-catalogue and prints a volume summary.
+1. An empirical upper-limit catalogue: for each analysed planet and gas, a defensible statement of
+   the form "the abundance of gas X on planet Y is below a given value at 95 percent credibility".
+2. A reusable, open-source machine-learning pipeline for spectral unmixing that transfers directly
+   to the larger archives expected from future missions such as Ariel.
 
-The logic is split into ordered modules (numbered by pipeline flow):
+The framing is deliberate. An actual detection with the present archive is extremely unlikely, so a
+non-detection is treated not as a failure but as a result in its own right: the first systematic,
+empirical ceiling on industrial pollution and selected biosignatures measured across real,
+potentially habitable exoplanets. This follows the template already established for nitrogen-dioxide
+pollution (Kopparapu et al., 2021) and chlorofluorocarbon detectability (Haqq-Misra et al., 2022).
+
+## What it does
+
+The study is computational, archive-only, and simulation-trained. No new observations or telescope
+time are required. The paradigm is supervised Bayesian inference for spectral unmixing: a model is
+trained on simulated spectra whose true gas abundances are known, then applied to real archival
+spectra to infer each gas's abundance together with its uncertainty.
+
+Target technosignature gases, all with no significant natural source and distinctive mid-infrared
+absorption between roughly 8.6 and 11.8 micrometres:
+
+- trichlorofluoromethane (CFC-11)
+- dichlorodifluoromethane (CFC-12)
+- sulphur hexafluoride (SF6)
+- nitrogen trifluoride (NF3)
+
+Secondary biosignature gases in the same MIRI window: ozone (assessed with methane as a
+disequilibrium pair), and the organic candidates dimethyl sulfide (DMS), dimethyl disulfide (DMDS),
+and methyl chloride.
+
+The pipeline runs end to end in six stages:
+
+1. Acquire and curate the real archival spectra from MAST and the NASA Exoplanet Archive under
+   explicit inclusion criteria. The MIRI subset is the scientific sample; near-infrared spectra
+   serve as demonstration and null-control data.
+2. Forward-model clean synthetic spectra with petitRADTRANS, adding the target gases as custom
+   opacity species from HITRAN2020 cross-sections, alongside spectral confounders.
+3. Inject realistic instrument noise with PandExo, then augment with correlated and systematic noise
+   under an optimistic (10 ppm) and a conservative (50 ppm) noise floor.
+4. Infer an abundance posterior per gas with a hybrid model: a classical nested-sampling retrieval
+   baseline plus a fast, amortised neural posterior estimation (NPE) model.
+5. Validate by injection-and-recovery, posterior calibration (coverage) tests, cross-method
+   agreement, and recovery of Earth's known CFC content from a real benchmark spectrum.
+6. Apply the validated pipeline to the real JWST archive and assemble the per-planet upper-limit
+   catalogue.
+
+## Current status
+
+Foundations. The repository has been reset to a clean research structure built directly from the
+submitted proposal (kept verbatim at [docs.txt](docs.txt)). An earlier dataset-builder that queried
+MAST and assembled a JWST near-infrared transmission-spectroscopy catalogue exists in the git
+history and will be reintroduced under `src/` as the pipeline is rebuilt in stages.
+
+Immediate next step: re-establish the data-gathering stage (archive query and inclusion criteria)
+under `src/`. See the roadmap in [docs/07-roadmap.md](docs/07-roadmap.md).
+
+## Repository layout
 
 ```
-app.py                     # thin entry point: runs the steps in order
-dataset_builder/
-  __init__.py              # loads the numbered modules under clean names
-  01_config.py             # constants: instrument modes, selectors, paths
-  02_api_call.py           # the MAST queries (SET A and SET B)
-  03_filter.py             # filtering to calibrated science spectra
-  04_catalogue.py          # building the two dataframes
-  05_summary.py            # the console summary (counts, GB by instrument)
-  06_write_csv.py          # writing the two CSVs (lock-resilient)
-  07_download.py           # the commented-out download function
+.
+  CLAUDE.md              Always-on project context, terminology, and rules (auto-loaded)
+  README.md              This overview
+  docs.txt               The submitted research proposal, kept verbatim (source of truth)
+  .gitignore             Python and data-artefact ignore rules
+  .gitattributes         Enforces LF line endings on the git hooks
+  .claude/               Claude Code configuration
+    settings.json        Permissions and commit-attribution settings
+    rules/               Path-scoped rules loaded on demand
+  docs/                  The working documentation (start at docs/README.md)
+  .githooks/             Versioned git hooks (commit-msg attribution stripper)
+  src/                   Implementation, added in stages (package: technosig)
 ```
 
-| Set | `obs_collection` | What it is |
-|-----|------------------|------------|
-| **SET A — JWST** | `JWST` | Mission-archive near-infrared time-series spectroscopy (the transit/transmission data). **This is the dataset for the pipeline.** |
-| **SET B — HLSP** | `HLSP` | High Level Science Products found for the **same targets**. ⚠️ See the honest finding below — for these targets this turned out to be *ground-based host-star* libraries, **not** JWST planet transmission spectra. |
+## Getting started
 
-### ⚠️ Honest finding about SET B (HLSP)
-
-The brief assumed HLSP would hold "science-ready, already-reduced transmission
-spectra" for these planets. Checked against the live archive, that is **not**
-what MAST returns:
-
-* Querying `obs_collection="HLSP"` by these target names yields only
-  **ground-based / multi-mission host-star** products — `OWLS` (APO/ARCES
-  optical echelle) and `MUSCLES` (UV–optical stellar SEDs). Those are
-  *host-star* spectra, not *planet* transmission spectra.
-* The textbook JWST transmission targets **WASP-39** and **WASP-96** return
-  **zero** HLSP rows at all.
-* Broad `HLSP` + JWST-instrument queries return tens of thousands of
-  **deep-field galaxy** survey spectra (JADES, CEERS, …) — also not exoplanets.
-
-**Conclusion:** as of this run there are no JWST reduced transmission-spectrum
-HLSPs catalogued in MAST CAOM under these target names. SET B is kept (clearly
-labelled, with a `provenance` column) so you can see exactly what exists, but it
-is **host-star context, not pipeline-ready planet spectra**. Re-running later
-will automatically pick up real JWST transmission-spectrum HLSPs if/when they
-are deposited.
-
-> Matching note: MAST forbids more than one wildcard per filter, so SET B is
-> matched by **exact** target name. Name variants (e.g. `WASP-39` vs
-> `WASP-39 b`) may not match — but since the only matches are host-star
-> libraries anyway, this does not affect the usable dataset.
-
-Both sets are restricted to the **near-infrared spectroscopic time-series**
-instrument modes:
-
-* `NIRSPEC/SLIT` — NIRSpec Bright Object Time Series (BOTS)
-* `NIRISS/SOSS` — Single-Object Slitless Spectroscopy
-* `NIRCAM/GRISM` — NIRCam Grism Time Series
-
-(MIRI is excluded as mid-infrared; `NIRCAM/IMAGE` is excluded as photometry, not
-spectroscopy; `NIRSPEC/MSA` and `NIRSPEC/IFU` are excluded as non-transit modes.)
-
-For each set the script pulls the product file list and keeps **only
-science-ready calibrated spectra** (`productType == SCIENCE`, calibration
-level ≥ 2), skipping raw level-1 (`_uncal`) and intermediate products.
-
----
-
-## ⚠️ Important note on MAST field names
-
-The brief asked to filter on `dataproduct_type = "spectrum"` **and** restrict to
-time-series/transit observations. Checked against the **live** astroquery field
-list (June 2026), those two are in direct conflict, so the script does something
-deliberately different — this is documented, not a silent work-around:
-
-* MAST's CAOM schema has **no** "observing mode" / "template" / "time-series"
-  field. The only time-related fields are `t_min`, `t_max`, `t_exptime`
-  (exposure timing — not a TSO-mode flag).
-* JWST transit / time-series observations are labelled
-  **`dataproduct_type == "timeseries"`**, *not* `"spectrum"`. Verified on the
-  textbook transiting exoplanet **WASP-39**: it returns `timeseries` products
-  and **zero** `spectrum` products.
-* `dataproduct_type == "spectrum"` returns ~175k NIRSpec/MSA **survey** spectra
-  (not transits). Filtering on `"spectrum"` would **exclude the entire dataset
-  we want**.
-
-**Therefore the time-series-mode selector used is `dataproduct_type =
-"timeseries"`.** If a future MAST data release adds a real observing-mode field,
-update `TIMESERIES_TYPE` / `NIR_TSO_MODES` in `dataset_builder/01_config.py`.
-
----
-
-## Dataset snapshot (most recent run — 2026-06-28)
-
-Numbers grow as JWST keeps observing; re-run to refresh.
-
-**SET A — JWST (the pipeline dataset)**
-
-| | |
-|---|---|
-| Unique targets | 214 |
-| Observations | 1,192 |
-| Science-ready spectra (files) | 3,924 |
-| Total data volume | **~1,020 GB** |
-
-Volume by instrument: `NIRSPEC/SLIT` ≈ 677 GB · `NIRCAM/GRISM` ≈ 198 GB ·
-`NIRISS/SOSS` ≈ 145 GB. (Confirms the brief's "50–200 GB" is an underestimate
-for the full NIR time-series spectroscopy holdings — budget accordingly before
-downloading.)
-
-**SET B — HLSP (host-star context only — see finding above)**
-
-24 targets · 51 observations · 149 files · ~0.9 GB · all `OWLS` / `MUSCLES` /
-`LOWLIB` / `MSTARPANSPEC` (ground-based / multi-mission host-star spectra).
-
-> Two scope caveats the script also prints: (1) MAST has no field separating
-> **transmission** (transit) from **emission** (eclipse) / phase-curve time
-> series — they share instrument modes, so SET A is *all* NIR time-series
-> spectroscopy; isolating pure transits needs an external ephemeris/planet list.
-> (2) SET A includes a few non-transiting targets that use the same modes
-> (brown dwarfs, directly-imaged companions) and calibration standard stars.
-
-## How to run
+Prerequisites: Python 3.11 or newer, git.
 
 ```bash
-# 1. Create and activate the virtual environment
-python -m venv venv
-# Windows (PowerShell):
-venv\Scripts\Activate.ps1
-# macOS / Linux:
-source venv/bin/activate
+# 1. Clone
+git clone <your-remote-url> astrophysics
+cd astrophysics
 
-# 2. Install dependencies
-pip install -r requirements.txt
+# 2. Create and activate a virtual environment
+python -m venv .venv
+# Windows PowerShell:  .venv\Scripts\Activate.ps1
+# Bash:                source .venv/bin/activate
 
-# 3. Build the catalogue (no downloads — metadata only)
-python app.py
+# 3. Enable the versioned commit-msg hook (strips attribution lines)
+git config core.hooksPath .githooks
+
+# 4. Read the docs, starting with the index
+#    docs/README.md
 ```
 
-The script prints a summary to the console (unique planets, observation count,
-total data volume in GB broken down by instrument) and writes the two CSVs into
-this folder.
+Dependencies (petitRADTRANS, PandExo, a nested sampler, a probabilistic library, Astropy, and so on)
+will be pinned in a `requirements.txt` or `pyproject.toml` as the corresponding pipeline stages are
+built.
 
----
+## Data policy
 
-## Output files
+Raw spectra and large downloaded archive products are never committed to this repository. Only
+derived, lightweight catalogues and code live here. See [docs/04-data-sources.md](docs/04-data-sources.md)
+and the data rule in [.claude/rules/data.md](.claude/rules/data.md).
 
-### `dataset_catalogue.csv` — one row per observation
+## Documentation
 
-| Column | Meaning |
-|--------|---------|
-| `set` | `JWST` or `HLSP` (which query the row came from). |
-| `target_name` | Planet/host target name as recorded by MAST. |
-| `instrument` | MAST `instrument_name` (e.g. `NIRSPEC/SLIT`). |
-| `provenance` | Data provenance (e.g. `CALJWST` for SET A; `OWLS`/`MUSCLES` for SET B). |
-| `filters_grating` | Filter / grating combination (e.g. `F290LP;G395H`). |
-| `observation_mode` | Plain-English mode (BOTS / SOSS / Grism TSO), derived from the instrument. |
-| `exposure_time_s` | Exposure time in seconds (`t_exptime`). |
-| `proposal_id` | JWST proposal ID. |
-| `proposal_pi` | Principal investigator surname. |
-| `release_date` | Public release date (converted from MJD to `YYYY-MM-DD`). |
-| `obs_id` | **Stable** mission observation identifier. |
-| `obsid` | Numeric MAST database id (joins to the files table). |
-| `calib_level` | Calibration level of the observation. |
-| `wavelength_region` | Energy band label from MAST. |
+The full working documentation lives in [docs/](docs/). Start at [docs/README.md](docs/README.md),
+which indexes every chunk and says which one to read for a given task. The original proposal is kept
+untouched at [docs.txt](docs.txt).
 
-### `dataset_files.csv` — one row per downloadable file
+## License and attribution
 
-| Column | Meaning |
-|--------|---------|
-| `set` | `JWST` or `HLSP`. |
-| `file_name` | Product file name. |
-| `product_type` | MAST product type (`SCIENCE`). |
-| `product_subgroup` | Product subgroup (e.g. `X1DINTS`, `X1D`, `WHTLT`). |
-| `calib_level` | Calibration level of the file. |
-| `size_bytes` | File size in bytes. |
-| `data_uri` | **MAST data URI** used to fetch the file. |
-| `parent_obsid` | Joins back to `obsid` in the catalogue. |
-
-Join the two tables on `dataset_files.parent_obsid == dataset_catalogue.obsid`.
-
----
-
-## Downloading the actual FITS data (off by default)
-
-Downloading is intentionally **disabled**. `dataset_builder/07_download.py`
-holds a commented-out `download_products()` function. To fetch the data later:
-
-1. Uncomment `download_products`, import it in `app.py`, and call it in `main()`.
-2. Point `download_dir` at a location **outside** the repo, or at one of the
-   git-ignored folders (`data/`, `mastDownload/`, `downloads/`).
-3. Re-run the script. **Expect 50–200 GB.**
-
-Never `git add` the downloaded FITS/ASDF files — `.gitignore` already blocks the
-usual locations and extensions, but stay alert.
-
----
-
-## Visualizing the dataset
-
-[`visualize.py`](visualize.py) runs the [`dataset_viz/`](dataset_viz/) package,
-which reads the two CSVs and writes health/overview plots (matplotlib only) into
-`dataset_viz/figures/` at 150 dpi:
-
-```bash
-python visualize.py
-```
-
-Generates per-instrument bars (observations, GB, unique targets), an
-exposure-time histogram (very short exposures flagged), a top-30 files-per-target
-bar, a release-date timeline, and a combined `summary.png`. If an expected column
-is missing it prints a note and skips just that plot. The PNGs are regenerable
-output and are **git-ignored** — only the plotting code is committed.
-
----
-
-## Requirements
-
-See [`requirements.txt`](requirements.txt): `astroquery`, `pandas`, `numpy`
-(astropy and friends come in as transitive dependencies) plus `matplotlib` for
-the plots. Tested on Python 3.11.
+This is an academic research project. All commits and releases are authored solely by the project
+owner. See [docs/06-references.md](docs/06-references.md) for the works this study builds on.
