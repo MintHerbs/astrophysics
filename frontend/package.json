@@ -1,0 +1,31 @@
+{
+  "name": "jwst-miri-spectra-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Frontend viewer for the JWST MIRI transmission-spectroscopy dataset (NASA Exoplanet Archive and MAST sources).",
+  "type": "module",
+  "scripts": {
+    "prepare-data": "node scripts/prepare-data.mjs",
+    "predev": "node scripts/prepare-data.mjs",
+    "dev": "next dev",
+    "prebuild": "node scripts/prepare-data.mjs",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@material/material-color-utilities": "^0.3.0",
+    "next": "^15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.1.6",
+    "typescript": "^5.7.3"
+  }
+}
