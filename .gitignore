@@ -69,11 +69,24 @@ desktop.ini
 # See docs/04-data-sources.md and .claude/rules/data.md
 # ============================================================
 
-# Raw and downloaded archive products (MAST, NASA Exoplanet Archive)
+# Raw and downloaded archive products (MAST, NASA Exoplanet Archive).
+# The lightweight inventory CSVs and fetch scripts under data/MAST/ and
+# data/NASA_Archive/ ARE committed; only the bulk downloaded data products are
+# ignored. The local filesystem is case-insensitive, so the patterns below must
+# not collide with the committed data/MAST/ directory (an earlier "data/mast/"
+# rule did, and was removed).
 data/raw/
 data/downloads/
-data/mast/
 data/cache/
+
+# astroquery writes downloaded MAST products under a mastDownload/ tree
+mastDownload/
+data/MAST/mastDownload/
+data/MAST/downloads/
+
+# Spectrum data files fetched from the NASA Exoplanet Archive (never committed)
+data/NASA_Archive/spectra/
+data/NASA_Archive/downloads/
 
 # Bulk spectra in common astronomy and array formats
 *.fits
@@ -82,6 +95,8 @@ data/cache/
 *.hdf5
 *.npy
 *.npz
+# NASA Exoplanet Archive spectrum data files (IPAC table format)
+*.tbl
 
 # Generated synthetic training sets and model checkpoints
 data/synthetic/
