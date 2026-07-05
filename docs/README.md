@@ -6,7 +6,9 @@ the path-scoped rules in [../.claude/rules/](../.claude/rules/); where the two o
 govern day-to-day work and these docs are the long-form background.
 
 The submitted proposal is kept verbatim at [../docs.txt](../docs.txt) and is the source of truth. A
-formatted, readable copy is at [proposal.md](proposal.md).
+formatted, readable copy is at [proposal.md](proposal.md). Corrections identified since submission are
+recorded in [08-review-and-gaps.md](08-review-and-gaps.md); the working docs (01 to 07) are the living
+narrative and point back to it.
 
 ## Index: which chunk to read when
 
@@ -22,6 +24,7 @@ Load only the chunk relevant to the task.
 | [05-glossary.md](05-glossary.md) | Plain-language definitions of the science, method, and tool terms | You hit an unfamiliar term (MIRI, retrieval, NPE, upper limit, and so on) |
 | [06-references.md](06-references.md) | The full reference list with reachable links where known | You need the source behind a claim or a tool |
 | [07-roadmap.md](07-roadmap.md) | The task list, grouped by pipeline stage and objective, with status | Planning, prioritising, or picking up the next task |
+| [08-review-and-gaps.md](08-review-and-gaps.md) | The internal review: fact-check, defect register, and corrections since submission | You need the evidence behind a correction, or to rerun the review |
 
 ## Reading order for a newcomer
 

@@ -15,6 +15,8 @@ the near-infrared subset exists in the git history and is the starting point.
 - [x] Reset the repository to a clean research structure built from the submitted proposal.
 - [x] Capture project context, terminology, and rules in `.claude/`.
 - [x] Write the working documentation set in `docs/`.
+- [x] Add the review record ([08-review-and-gaps.md](08-review-and-gaps.md)), six project skills, and
+      layered guardrails (invariants, rules, and hooks).
 - [ ] Pin the environment: choose Python version, add `requirements.txt` or `pyproject.toml`, set up
       linting, formatting, type checking, and testing.
 
@@ -26,13 +28,19 @@ the near-infrared subset exists in the git history and is the starting point.
       and record the exact query with each catalogue.
 - [ ] Produce a curated target catalogue: the MIRI scientific sample plus the near-infrared
       null-control set.
+- [ ] Key the wavelength inclusion criterion off the instrument mode (P750L, 5 to 12 micrometres),
+      not the CAOM `em_max` field, which understates coverage ([08-review-and-gaps.md](08-review-and-gaps.md) S4).
+- [ ] Produce a cool and temperate target shortlist for the technosignature search, excluding hot
+      planets where the target-gas cross-sections are invalid ([08-review-and-gaps.md](08-review-and-gaps.md) C2).
 - [ ] Build a spectrum loader that caches raw products under an ignored `data/` path.
 - [ ] Record MAST query gotchas in [04-data-sources.md](04-data-sources.md).
 
 ## Phase 2: forward model (Objective 1)
 
 - [ ] Wire petitRADTRANS to produce clean spectra over an abundance grid.
-- [ ] Add CFC-11, CFC-12, SF6, and NF3 as custom opacity species from HITRAN2020.
+- [ ] Add CFC-11, CFC-12, SF6 (cross-sections) and NF3 (line list) as custom opacity species from
+      HITRAN2020, confirm their temperature validity, and restrict the technosignature grid to cool
+      and temperate targets ([08-review-and-gaps.md](08-review-and-gaps.md) C2, M2).
 - [ ] Add the confounders (methane, ammonia, hydrogen sulphide, clouds, temperature structure).
 - [ ] Add the ozone, DMS, DMDS, and methyl chloride species for the biosignature extension.
 
@@ -53,8 +61,13 @@ the near-infrared subset exists in the git history and is the starting point.
 - [ ] Injection-and-recovery on held-out synthetic spectra.
 - [ ] Posterior calibration (coverage) tests.
 - [ ] Cross-method agreement between the classical and NPE results.
-- [ ] Recover Earth's known CFC content from the Lustig-Yaeger et al. (2023) benchmark spectrum.
+- [ ] Recover CFC-11 and CFC-12 from the Lustig-Yaeger et al. (2023) benchmark in the noiseless limit
+      (a forward-model fidelity test, not a JWST-noise sensitivity test; [08-review-and-gaps.md](08-review-and-gaps.md) C3).
 - [ ] Confirm near-infrared inputs return non-informative limits (the null-control check).
+- [ ] Assess per-band sensitivity across the MIRI LRS range; expect weaker limits at the red end
+      ([08-review-and-gaps.md](08-review-and-gaps.md) C4).
+- [ ] Distinguish co-adding genuine repeat transits from choosing among pipeline reductions of one
+      transit ([08-review-and-gaps.md](08-review-and-gaps.md) S5).
 
 ## Phase 6: catalogue and release (Objective 3 and secondary)
 

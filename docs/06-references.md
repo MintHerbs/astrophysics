@@ -4,7 +4,7 @@ The works this project builds on, as cited in the proposal ([../docs.txt](../doc
 or stable URL is known it is given so the reference is reachable, per
 [../.claude/rules/documentation.md](../.claude/rules/documentation.md).
 
-- Ardevol Martinez, F., Min, M., Kamp, I. and Palmer, P.I., 2022. Convolutional neural networks as an
+- Ardévol Martínez, F., Min, M., Kamp, I. and Palmer, P.I., 2022. Convolutional neural networks as an
   alternative to Bayesian retrievals for interpreting exoplanet transmission spectra. Astronomy and
   Astrophysics, 662, A108.
 - Astropy Collaboration, 2022. The Astropy Project: sustaining and growing a community-oriented
@@ -38,9 +38,14 @@ or stable URL is known it is given so the reference is reachable, per
 - Madhusudhan, N., Sarkar, S., Constantinou, S., Holmberg, M., Piette, A.A.A. and Moses, J.I., 2023.
   Carbon-bearing molecules in a possible Hycean atmosphere. The Astrophysical Journal Letters,
   956(1), L13.
-- Marquez-Neila, P., Fisher, C., Sznitman, R. and Heng, K., 2018. Supervised machine learning for
+- Madhusudhan, N., et al., 2025. New constraints on DMS and DMDS in the atmosphere of K2-18 b from
+  JWST MIRI. The Astrophysical Journal Letters, 983(2), L40.
+  <https://doi.org/10.3847/2041-8213/adc1c8> (Added during the 2026-07-05 review as the contested
+  claim the literature review refers to; the 2023 paper above reported only a tentative hint. See
+  [08-review-and-gaps.md](08-review-and-gaps.md) S1.)
+- Márquez-Neila, P., Fisher, C., Sznitman, R. and Heng, K., 2018. Supervised machine learning for
   analysing spectra of exoplanetary atmospheres. Nature Astronomy, 2(9), pp.719-724.
-- Molliere, P., Wardenier, J.P., van Boekel, R., Henning, T., Molaverdikhani, K. and Snellen, I.A.G.,
+- Mollière, P., Wardenier, J.P., van Boekel, R., Henning, T., Molaverdikhani, K. and Snellen, I.A.G.,
   2019. petitRADTRANS: a Python radiative transfer package for exoplanet characterization and
   retrieval. Astronomy and Astrophysics, 627, A67.
 - Schwieterman, E.W., Kiang, N.Y., Parenteau, M.N., et al., 2018. Exoplanet biosignatures: a review of
@@ -51,7 +56,7 @@ or stable URL is known it is given so the reference is reachable, per
 - Seager, S., Petkowski, J.J., Huang, J., et al., 2023. Fully fluorinated non-carbon compounds NF3 and
   SF6 as ideal technosignature gases. Scientific Reports, 13, 13576.
 - Stevenson, K.B., Lustig-Yaeger, J., May, E.M., Kopparapu, R.K., et al., 2025. K2-18b does not meet
-  the standards of evidence for life. The Astronomical Journal.
+  the standards of evidence for life. The Astronomical Journal, 170(5), 257.
   <https://doi.org/10.3847/1538-3881/ae0338>
-- Vasist, M., Rozet, F., Absil, O., Molliere, P., Nasedkin, E. and Louppe, G., 2023. Neural posterior
+- Vasist, M., Rozet, F., Absil, O., Mollière, P., Nasedkin, E. and Louppe, G., 2023. Neural posterior
   estimation for exoplanetary atmospheric retrieval. Astronomy and Astrophysics, 672, A147.

@@ -24,13 +24,33 @@ Inclusion criteria (a spectrum is admitted only if it passes all):
 - Signal-to-noise ratio: above a stated threshold, recorded with the catalogue.
 
 Why the split: the target gas features are mid-infrared, reachable only by MIRI. Near-infrared
-spectra cannot physically contain the target signal, which makes them a null control: the pipeline
-should return non-informative limits there, and doing so is evidence it behaves correctly.
+spectra contain no strong target band, which makes them a null control: the pipeline should return
+non-informative limits there, and doing so is evidence it behaves correctly.
+
+### Wavelength coverage caveats
+
+Two practical points about the target band, recorded so they are not rediscovered (see
+[08-review-and-gaps.md](08-review-and-gaps.md) S4 and C4):
+
+- Do not filter on the archive coverage metadata. MAST records MIRI LRS coverage as 5 to 10
+  micrometres in the CAOM `em_min` and `em_max` fields (which is what the inventory's
+  `wavelength_min_um` and `wavelength_max_um` columns carry), and this understates the true range.
+  MIRI LRS with the P750L disperser covers 5 to 12 micrometres, and the reduced spectra in the NASA
+  inventory reach about 11.8 micrometres and beyond. Key the wavelength inclusion criterion off the
+  instrument mode (P750L), not `em_max`, or the whole sample is wrongly excluded and the CFC-11 band
+  near 11.8 micrometres is lost.
+- Expect uneven sensitivity across the band. MIRI LRS throughput and flux calibration degrade toward
+  the red end, so the bands near 10.5 to 11.8 micrometres (SF6, CFC-12, NF3, and CFC-11) are observed
+  with lower sensitivity than the 9 to 10 micrometre region (NF3 at 9.7, ozone at 9.6, CFC-11 at 9.2).
+  Expect the tightest limits near 9 to 10 micrometres and the weakest at the red edge.
 
 Access practice: prefer programmatic access (for example astroquery for MAST, or the TAP service for
 the NASA Exoplanet Archive) so the sample is reproducible. Record the exact query and inclusion criteria with any
 catalogue produced. Cache raw products under an ignored local `data/` path. Raw spectra are never
-committed (see below).
+committed (see below). Note that the archives often list several published reductions of a single
+transit (different pipelines, for example WASP-39 b); these are not independent transits, and
+combining spectra must distinguish the two cases (see [02-methodology.md](02-methodology.md) and
+[08-review-and-gaps.md](08-review-and-gaps.md) S5).
 
 ## Stream 2: synthetic training spectra (the labels)
 

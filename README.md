@@ -72,16 +72,19 @@ under `src/`. See the roadmap in [docs/07-roadmap.md](docs/07-roadmap.md).
 
 ```
 .
-  CLAUDE.md              Always-on project context, terminology, and rules (auto-loaded)
+  CLAUDE.md              Always-on project context, terminology, rules, and invariants (auto-loaded)
   README.md              This overview
-  docs.txt               The submitted research proposal, kept verbatim (source of truth)
+  docs.txt               The submitted research proposal, kept verbatim (frozen source of truth)
   .gitignore             Python and data-artefact ignore rules
   .gitattributes         Enforces LF line endings on the git hooks
   .claude/               Claude Code configuration
-    settings.json        Permissions and commit-attribution settings
+    settings.json        Permissions, commit-attribution, and the frozen-docs hook
     rules/               Path-scoped rules loaded on demand
+    skills/              Project skills (doc-align, gap-analysis, research-mode, sci-verify, ref-check, scope-guard)
+    hooks/               Hook scripts (protect the frozen submission)
+  data/                  Lightweight archive inventories and fetch scripts (no bulk data)
   docs/                  The working documentation (start at docs/README.md)
-  .githooks/             Versioned git hooks (commit-msg attribution stripper)
+  .githooks/             Versioned git hooks (commit-msg attribution stripper; pre-commit data and frozen-docs guard)
   src/                   Implementation, added in stages (package: technosig)
 ```
 
@@ -120,7 +123,16 @@ and the data rule in [.claude/rules/data.md](.claude/rules/data.md).
 
 The full working documentation lives in [docs/](docs/). Start at [docs/README.md](docs/README.md),
 which indexes every chunk and says which one to read for a given task. The original proposal is kept
-untouched at [docs.txt](docs.txt).
+untouched at [docs.txt](docs.txt). The internal review, with the fact-check and the corrections since
+submission, is in [docs/08-review-and-gaps.md](docs/08-review-and-gaps.md).
+
+Six project skills under [.claude/skills/](.claude/skills/) (`/doc-align`, `/gap-analysis`,
+`/research-mode`, `/sci-verify`, `/ref-check`, `/scope-guard`) and the project invariants in
+[CLAUDE.md](CLAUDE.md) keep contributions aligned with the project goal. One note on the sample: the
+current MIRI transmission archive holds essentially no habitable-zone rocky planets (TRAPPIST-1 has
+only MIRI photometry); its temperate targets are sub-Neptunes and its rocky targets are hot. The
+upper-limit result is valid throughout; the detail is in
+[docs/08-review-and-gaps.md](docs/08-review-and-gaps.md).
 
 ## License and attribution
 

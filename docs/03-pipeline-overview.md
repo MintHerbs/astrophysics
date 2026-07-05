@@ -37,9 +37,12 @@ output so it can be built and tested on its own.
 ## Stage 1: Data
 
 Query MAST and the NASA Exoplanet Archive under explicit inclusion criteria (instrument mode,
-wavelength coverage, signal-to-noise). Produce a small curated target catalogue and load the real
-spectra. The MIRI subset is the scientific sample; near-infrared spectra are demonstration and
-null-control data. Detail in [04-data-sources.md](04-data-sources.md). Module: `technosig/data`.
+wavelength coverage, signal-to-noise). The wavelength criterion keys off the instrument mode (MIRI
+LRS, disperser P750L, covering 5 to 12 micrometres), not the archive coverage metadata, which
+understates the true range. Produce a small curated target catalogue and load the real spectra. The
+MIRI subset is the scientific sample; near-infrared spectra are demonstration and null-control data.
+Detail in [04-data-sources.md](04-data-sources.md) and [08-review-and-gaps.md](08-review-and-gaps.md)
+S4. Module: `technosig/data`.
 
 ## Stage 2: Forward model
 
@@ -62,10 +65,13 @@ artefact). Module: `technosig/inference`.
 
 ## Stage 5: Validation
 
-Confirm the posteriors are trustworthy: injection-and-recovery on held-out synthetic spectra,
-posterior calibration (coverage), cross-method agreement, and, most importantly, recovery of Earth's
-known CFC content from a real benchmark spectrum. A near-infrared input must return a non-informative
-limit. Module: `technosig/validation`.
+Confirm the posteriors are trustworthy across three distinct claims: calibration (coverage),
+sensitivity (injection-and-recovery at the 10 and 50 ppm floors), and forward-model fidelity
+(recovery of CFC-11 and CFC-12 from Earth's real benchmark spectrum in the noiseless limit, not a
+JWST-noise sensitivity demonstration). Add cross-method agreement between the classical and NPE
+results. A near-infrared input must return a non-informative limit. See
+[02-methodology.md](02-methodology.md) and [08-review-and-gaps.md](08-review-and-gaps.md) C3. Module:
+`technosig/validation`.
 
 ## Stage 6: Catalogue
 

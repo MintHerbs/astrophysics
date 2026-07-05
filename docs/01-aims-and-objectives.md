@@ -12,16 +12,34 @@ their atmospheric abundances, using a reproducible machine-learning pipeline.
 ## Why upper limits, not detections
 
 An actual detection with the present archive is extremely unlikely. Most of the archive is hot gas
-giants and sub-Neptunes with no plausible industrial reservoir, so the scientifically meaningful
-sample is the small set of rocky, potentially habitable worlds such as the TRAPPIST-1 planets. Even
-there, the expected signal is so small that detecting present-day-Earth-level concentrations would
-require observing essentially every available transit under optimistic noise assumptions.
+giants and sub-Neptunes with no plausible industrial reservoir. The industrial-pollution question is
+astrobiologically meaningful only for cool, potentially habitable worlds, of which the present MIRI
+transmission archive holds very few (see the sample-reality note below). Even for the most favourable
+target, the expected signal is so small that detecting present-day-Earth-level concentrations would
+require observing essentially every available transit under optimistic noise assumptions
+(Haqq-Misra et al., 2022).
 
 The response is to reframe the deliverable. The result is an upper limit: "the abundance of gas X on
 planet Y is below a given value at 95 percent credibility". A non-detection is then a result in its
 own right, namely the first systematic empirical ceiling on industrial pollution across real
 exoplanets. This mirrors the accepted template for nitrogen-dioxide pollution (Kopparapu et al.,
 2021) and CFC detectability (Haqq-Misra et al., 2022), and it is publishable regardless of outcome.
+
+## Sample reality (what the MIRI archive actually contains)
+
+The framing above once pointed to "rocky, potentially habitable worlds such as the TRAPPIST-1
+planets". The real MIRI transmission archive does not support that framing, and this is stated plainly
+so the science is not oversold (evidence and sources in [08-review-and-gaps.md](08-review-and-gaps.md) C1):
+
+- TRAPPIST-1 has no MIRI transmission spectra. Its JWST MIRI data is broadband photometry in
+  secondary eclipse (thermal emission at 12.8 and 15 micrometres), which a transmission pipeline
+  cannot use. It is a motivating and future case (for example for Ariel), not a current target.
+- In the project's own inventory, the rocky targets present (55 Cancri e, GJ 1132 b, LHS 3844 b,
+  LHS 1478 b) are hot, not habitable-zone; the only temperate targets are sub-Neptunes (K2-18 b,
+  GJ 1214 b).
+- The upper-limit exercise stays valid on every target, but its astrobiological weight is small where
+  the target is hot or gas-rich. This is a further reason the deliverable is a defensible ceiling, not
+  a detection.
 
 ## The gap this fills
 
@@ -52,4 +70,4 @@ abundances.
 - A reusable, open-source spectral-unmixing pipeline that transfers to future archives such as Ariel.
 - A peer-reviewed publication whose value does not depend on a detection.
 - A demonstration that the pipeline returns non-informative limits on near-infrared data, where no
-  target signal can physically exist, as evidence the method behaves correctly.
+  strong target band exists, as evidence the method behaves correctly.
