@@ -8,6 +8,9 @@ import { fmtInt, fmtMeta, fmtRange } from "@/lib/format";
 import Icon from "./Icon";
 import EmptyState from "./EmptyState";
 import ChartBoundary from "./ChartBoundary";
+import NasaUploadPanel from "./NasaUploadPanel";
+import NasaCatalogPicker from "./NasaCatalogPicker";
+import MastCatalogPicker from "./MastCatalogPicker";
 
 const SpectrumChart = dynamic(() => import("./SpectrumChart"), {
   ssr: false,
@@ -28,6 +31,7 @@ interface Props {
   content: SourceContent;
   selectedId: string;
   onSelect: (id: string) => void;
+  onDataChanged: () => void;
 }
 
 function optionText(s: Spectrum): string {
@@ -38,7 +42,7 @@ function optionText(s: Spectrum): string {
   return s.label;
 }
 
-export default function ViewerView({ dataset, content, selectedId, onSelect }: Props) {
+export default function ViewerView({ dataset, content, selectedId, onSelect, onDataChanged }: Props) {
   const groups = useMemo(() => {
     const map = new Map<string, Spectrum[]>();
     for (const s of dataset.spectra) {
@@ -49,6 +53,16 @@ export default function ViewerView({ dataset, content, selectedId, onSelect }: P
   }, [dataset]);
 
   const selected = dataset.spectra.find((s) => s.id === selectedId) ?? dataset.spectra[0];
+  const isTransmission = content.measurement.isTransmission;
+  const populatePanel =
+    content.key === "nasa" ? (
+      <>
+        <NasaCatalogPicker spectra={dataset.spectra} defaultOpen={!dataset.plottable} />
+        <NasaUploadPanel defaultOpen={!dataset.plottable} onDone={onDataChanged} />
+      </>
+    ) : (
+      <MastCatalogPicker defaultOpen={!dataset.plottable} onDone={onDataChanged} />
+    );
 
   // The whole source has nothing catalogued at all.
   if (!dataset.present || dataset.spectra.length === 0) {
@@ -61,11 +75,10 @@ export default function ViewerView({ dataset, content, selectedId, onSelect }: P
           body={content.emptyState.body}
           steps={content.emptyState.steps}
         />
+        {populatePanel}
       </div>
     );
   }
-
-  const isTransmission = content.measurement.isTransmission;
 
   return (
     <div className="stack">
@@ -102,7 +115,11 @@ export default function ViewerView({ dataset, content, selectedId, onSelect }: P
             spectrum={selected}
             isTransmission={isTransmission}
             quantity={content.measurement.quantity}
-            axisLabel={content.measurement.axisLabel}
+            axisLabel={
+              selected.yUnit
+                ? `${content.measurement.quantity} (${selected.yUnit})`
+                : content.measurement.axisLabel
+            }
           />
         </ChartBoundary>
       ) : (
@@ -115,6 +132,8 @@ export default function ViewerView({ dataset, content, selectedId, onSelect }: P
       )}
 
       {selected ? <ReferenceCard spectrum={selected} content={content} /> : null}
+
+      {populatePanel}
     </div>
   );
 }
@@ -189,6 +208,12 @@ function ReferenceCard({ spectrum, content }: { spectrum: Spectrum; content: Sou
         ) : null}
         <dt>Wavelength coverage</dt>
         <dd>{fmtRange(spectrum.wavelength_min_um, spectrum.wavelength_max_um)}</dd>
+        {spectrum.yUnit ? (
+          <>
+            <dt>Depth unit</dt>
+            <dd>{spectrum.yUnit} (as recorded in the source file)</dd>
+          </>
+        ) : null}
         <dt>Points loaded</dt>
         <dd>
           {fmtInt(spectrum.pointCount)}

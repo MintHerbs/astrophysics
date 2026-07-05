@@ -51,9 +51,9 @@ DEPTH_HINTS = ("depth", "transit", "rprs", "rp_rs", "rp/rs", "trandep", "flux",
 ERROR_HINTS = ("err", "unc", "sigma", "_e", "error")
 
 POINTS_COLUMNS = [
-    "source_file", "pl_name", "reference_bibcode",
+    "source_file", "pl_name", "reference_bibcode", "note",
     "wavelength_um", "depth", "depth_err_low", "depth_err_high",
-    "depth_column", "wavelength_column",
+    "depth_column", "wavelength_column", "depth_unit", "wavelength_unit",
 ]
 
 
@@ -81,21 +81,66 @@ def pick_column(columns, hints, exclude=()):
     return None
 
 
-def load_reference_map():
-    """Map spectrum-file basename -> (pl_name, bibcode) from the inventory CSV."""
+def load_reference_maps():
+    """Build two lookups from the inventory CSV to identify a downloaded file.
+
+    by_filename: spec_path basename -> (pl_name, bibcode). This matches the
+    archive-internal path recorded by the TAP query, which is not the file name
+    the Firefly "Download All Checked Spectra" action actually gives you.
+
+    by_pl_name_authors: (pl_name, authors) lower-cased -> bibcode. Every real
+    per-spectrum .tbl downloaded this way carries PL_NAME and REFERENCE as IPAC
+    header keywords (confirmed by inspecting a real download), and REFERENCE
+    matches the inventory's authors column, so this is the reliable match.
+    """
     if not os.path.exists(INVENTORY_CSV):
-        return {}
+        return {}, {}
     inv = pd.read_csv(INVENTORY_CSV)
-    out = {}
+    by_filename = {}
+    by_pl_name_authors = {}
     for _, r in inv.iterrows():
         sp = str(r.get("spec_path", "")).strip()
+        pl_name = r.get("pl_name")
+        bibcode = r.get("reference_bibcode")
+        authors = r.get("authors")
         if sp:
-            out[os.path.basename(sp)] = (r.get("pl_name"), r.get("reference_bibcode"))
-    return out
+            by_filename[os.path.basename(sp)] = (pl_name, bibcode)
+        if pl_name and authors:
+            by_pl_name_authors[(str(pl_name).strip().lower(), str(authors).strip().lower())] = bibcode
+    return by_filename, by_pl_name_authors
 
 
-def parse_file(path, refmap, cols):
+def column_unit(tbl, col_name):
+    """The unit recorded for a column in the IPAC units row, or None.
+
+    Read from the astropy Table (not the pandas DataFrame), since the units
+    row is only preserved there. Returns None if the table has no such column
+    or no unit was recorded (units are optional in IPAC format).
+    """
+    if tbl is None or col_name not in getattr(tbl, "colnames", []):
+        return None
+    unit = tbl[col_name].unit
+    return str(unit) if unit is not None else None
+
+
+MICRON_UNIT_HINTS = ("micron", "um", "µm")
+
+
+def ipac_keyword(tbl, name):
+    """Read one IPAC header keyword's value, or None if absent or null."""
+    if tbl is None:
+        return None
+    kw = tbl.meta.get("keywords", {}) if hasattr(tbl, "meta") else {}
+    entry = kw.get(name)
+    if not entry:
+        return None
+    value = str(entry.get("value", "")).strip()
+    return value if value and value.lower() != "null" else None
+
+
+def parse_file(path, refmaps, cols):
     """Parse one .tbl into a tidy DataFrame of points, plus a short summary."""
+    by_filename, by_pl_name_authors = refmaps
     df, tbl = read_ipac_table(path)
     base = os.path.basename(path)
     if df is None or df.empty:
@@ -106,29 +151,77 @@ def parse_file(path, refmap, cols):
     depth_col = cols.get("depth") or pick_column(
         df.columns, DEPTH_HINTS, exclude={wl_col})
     if wl_col is None or depth_col is None:
-        print(f"  {base}: columns found {list(df.columns)}; could not identify "
-              f"wavelength/depth. Re-run with --wavelength-col/--depth-col.")
+        lowered = {str(c).lower() for c in df.columns}
+        if {"spec_path", "bibcode", "pl_name"} & lowered:
+            print(f"  {base}: this looks like the archive's spectrum inventory "
+                  f"table (it has columns like spec_path/bibcode/pl_name), not "
+                  f"an individual spectrum's data. Downloading or exporting the "
+                  f"results table gives you this metadata; the wavelength and "
+                  f"depth values come from a separate action. On the Atmospheric "
+                  f"Spectroscopy page, check the rows you want and use "
+                  f"'Download All Checked Spectra' (not a table export) to get "
+                  f"the per-spectrum .tbl files.")
+        else:
+            print(f"  {base}: columns found {list(df.columns)}; could not identify "
+                  f"wavelength/depth. Re-run with --wavelength-col/--depth-col.")
         return None
 
     err_col = cols.get("err") or pick_column(
         df.columns, ERROR_HINTS, exclude={wl_col, depth_col})
 
-    pl_name, bibcode = refmap.get(base, (None, None))
+    wavelength_unit = column_unit(tbl, wl_col)
+    depth_unit = column_unit(tbl, depth_col)
+    if wavelength_unit and not any(h in wavelength_unit.lower() for h in MICRON_UNIT_HINTS):
+        print(f"  {base}: warning: wavelength column '{wl_col}' is recorded in "
+              f"'{wavelength_unit}', not micrometres; wavelength_um for this file "
+              f"may be in the wrong unit.")
+
+    kw_pl_name = ipac_keyword(tbl, "PL_NAME")
+    kw_reference = ipac_keyword(tbl, "REFERENCE")
+    kw_note = ipac_keyword(tbl, "NOTE")
+    matched_by = None
+    pl_name = bibcode = None
+    if kw_pl_name and kw_reference:
+        bibcode = by_pl_name_authors.get((kw_pl_name.strip().lower(), kw_reference.strip().lower()))
+        if bibcode:
+            pl_name = kw_pl_name
+            matched_by = "embedded PL_NAME/REFERENCE keywords"
+    if pl_name is None and base in by_filename:
+        pl_name, bibcode = by_filename[base]
+        matched_by = "file name matched to the inventory's spec_path"
+    if pl_name is None and kw_pl_name:
+        # The file identifies its own planet but no inventory row's authors
+        # matched (for example a spectrum published after the inventory was
+        # last fetched); keep the planet name so the spectrum is still labelled.
+        pl_name = kw_pl_name
+        matched_by = "embedded PL_NAME keyword only (no matching inventory reference)"
+
+    # Several planets have more than one spectrum from the same paper (different
+    # reduction pipelines), distinguished only by the inventory's note column.
+    # The embedded NOTE keyword carries the same text, so it is passed through
+    # here for the frontend to disambiguate which inventory row a file belongs
+    # to; this script does not need to resolve that itself.
+    note = kw_note
+
     out = pd.DataFrame({
         "source_file": base,
         "pl_name": pl_name,
         "reference_bibcode": bibcode,
+        "note": note,
         "wavelength_um": pd.to_numeric(df[wl_col], errors="coerce"),
         "depth": pd.to_numeric(df[depth_col], errors="coerce"),
         "depth_err_low": pd.to_numeric(df[err_col], errors="coerce") if err_col else pd.NA,
         "depth_err_high": pd.to_numeric(df[err_col], errors="coerce") if err_col else pd.NA,
         "depth_column": depth_col,
         "wavelength_column": wl_col,
+        "depth_unit": depth_unit,
+        "wavelength_unit": wavelength_unit,
     }).dropna(subset=["wavelength_um", "depth"]).sort_values("wavelength_um")
 
     label = pl_name if pl_name else base
+    match_note = f"; matched by {matched_by}" if matched_by else "; no planet/reference match found"
     print(f"  {base}: {len(out)} points; planet={label}; "
-          f"wavelength='{wl_col}', depth='{depth_col}', err='{err_col}'.")
+          f"wavelength='{wl_col}', depth='{depth_col}', err='{err_col}'{match_note}.")
     return out[POINTS_COLUMNS]
 
 
@@ -174,12 +267,12 @@ def main(argv=None):
         return 0
 
     print(f"Reading {len(files)} .tbl file(s) from {RAW_DIR} ...")
-    refmap = load_reference_map()
+    refmaps = load_reference_maps()
     os.makedirs(PLOTS_DIR, exist_ok=True)
 
     all_points = []
     for path in files:
-        pts = parse_file(path, refmap, cols)
+        pts = parse_file(path, refmaps, cols)
         if pts is None or pts.empty:
             continue
         all_points.append(pts)

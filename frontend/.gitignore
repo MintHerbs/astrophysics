@@ -8,11 +8,6 @@
 /out
 next-env.d.ts
 
-# Generated data. Produced by `npm run prepare-data` from the CSVs under
-# ../data. Regenerable and never committed (the source CSVs are the record of
-# truth). See README.md.
-/src/data/*.json
-
 # Debug and environment
 npm-debug.log*
 yarn-debug.log*

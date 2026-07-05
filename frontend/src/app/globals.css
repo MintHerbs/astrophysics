@@ -596,6 +596,108 @@ code.inline {
   opacity: 0.8;
 }
 
+/* ----------------------------- Disclosure -------------------------------- */
+
+.disclosure-header {
+  appearance: none;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0;
+  font-family: inherit;
+}
+.disclosure-header:hover .type-title {
+  color: var(--md-sys-color-primary);
+}
+
+/* ------------------------------- Dropzone -------------------------------- */
+
+.dropzone {
+  border: 2px dashed var(--md-sys-color-outline);
+  border-radius: var(--md-shape-lg);
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  background-color: var(--md-sys-color-surface-container-low);
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+.dropzone:hover,
+.dropzone:focus-visible {
+  border-color: var(--md-sys-color-primary);
+  background-color: color-mix(in srgb, var(--md-sys-color-primary) 6%, var(--md-sys-color-surface-container-low));
+  outline: none;
+}
+.dropzone.active {
+  border-color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.file-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 12px;
+  border-radius: var(--md-shape-sm);
+  background-color: var(--md-sys-color-surface-container-highest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  font-size: 0.82rem;
+}
+.file-chip-remove {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.file-chip-remove:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+}
+
+.segmented-btn.filled {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  border: none;
+  padding: 11px 20px;
+}
+.segmented-btn.filled:hover {
+  background-color: var(--md-sys-color-primary);
+  opacity: 0.92;
+}
+.segmented-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spin-icon {
+  animation: spin 1000ms linear infinite;
+}
+
+.catalog-controls {
+  align-items: center;
+}
+.catalog-controls input[type="search"]:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 1px;
+}
+
 /* ------------------------------- Utilities ------------------------------ */
 
 .grid-2 {

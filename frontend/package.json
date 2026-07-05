@@ -5,10 +5,7 @@
   "description": "Frontend viewer for the JWST MIRI transmission-spectroscopy dataset (NASA Exoplanet Archive and MAST sources).",
   "type": "module",
   "scripts": {
-    "prepare-data": "node scripts/prepare-data.mjs",
-    "predev": "node scripts/prepare-data.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/prepare-data.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

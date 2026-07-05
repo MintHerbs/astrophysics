@@ -1,35 +1,27 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { SourceData, SourceKey } from "@/lib/types";
+import type { SourceKey } from "@/lib/types";
 import { CONTENT } from "@/lib/content";
+import { useDataset } from "@/lib/useDataset";
+import Icon from "./Icon";
 import SourceToggle from "./SourceToggle";
 import NavTabs, { type ViewKey } from "./NavTabs";
 import ViewerView from "./ViewerView";
 import OverviewView from "./OverviewView";
 import DictionaryView from "./DictionaryView";
 
-interface Props {
-  datasets: Record<SourceKey, SourceData>;
-}
-
-function defaultSelected(dataset: SourceData): string {
-  const withPoints = dataset.spectra.find((s) => s.pointCount > 0);
-  return (withPoints ?? dataset.spectra[0])?.id ?? "";
-}
-
-export default function Dashboard({ datasets }: Props) {
+export default function Dashboard() {
   const [source, setSource] = useState<SourceKey>("nasa");
   const [view, setView] = useState<ViewKey>("viewer");
-  const [selected, setSelected] = useState<Record<SourceKey, string>>(() => ({
-    nasa: defaultSelected(datasets.nasa),
-    mast: defaultSelected(datasets.mast),
-  }));
+  const nasa = useDataset("nasa");
+  const mast = useDataset("mast");
+  const [selected, setSelected] = useState<Record<SourceKey, string>>({ nasa: "", mast: "" });
 
-  const dataset = datasets[source];
+  const active = source === "nasa" ? nasa : mast;
   const content = CONTENT[source];
 
-  const selectView = useMemo(
+  const selectSpectrum = useMemo(
     () => (id: string) => setSelected((prev) => ({ ...prev, [source]: id })),
     [source],
   );
@@ -49,16 +41,38 @@ export default function Dashboard({ datasets }: Props) {
       <NavTabs view={view} onChange={setView} />
 
       <div role="tabpanel">
-        {view === "viewer" ? (
-          <ViewerView
-            dataset={dataset}
-            content={content}
-            selectedId={selected[source]}
-            onSelect={selectView}
-          />
+        {active.loading && !active.data ? (
+          <div className="card" style={{ display: "grid", placeItems: "center", padding: 48 }}>
+            <div style={{ textAlign: "center" }}>
+              <div className="spinner" />
+              <p className="type-label muted" style={{ marginTop: 12 }}>
+                Loading {content.name} dataset
+              </p>
+            </div>
+          </div>
+        ) : active.error ? (
+          <div className="banner caution" role="alert">
+            <Icon name="error" />
+            <p>
+              <strong>Could not load the {content.name} dataset.</strong> {active.error} Reload the
+              page, or check that the dev server is running.
+            </p>
+          </div>
+        ) : active.data ? (
+          <>
+            {view === "viewer" ? (
+              <ViewerView
+                dataset={active.data}
+                content={content}
+                selectedId={selected[source]}
+                onSelect={selectSpectrum}
+                onDataChanged={active.reload}
+              />
+            ) : null}
+            {view === "overview" ? <OverviewView dataset={active.data} content={content} /> : null}
+            {view === "dictionary" ? <DictionaryView dataset={active.data} content={content} /> : null}
+          </>
         ) : null}
-        {view === "overview" ? <OverviewView dataset={dataset} content={content} /> : null}
-        {view === "dictionary" ? <DictionaryView dataset={dataset} content={content} /> : null}
       </div>
     </main>
   );
