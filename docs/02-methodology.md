@@ -20,7 +20,10 @@ field.
 
 1. Clean spectra. Produce noiseless spectra with the petitRADTRANS radiative-transfer model.
 2. Target gases. Add CFC-11, CFC-12, SF6, and NF3 as custom opacity species using HITRAN2020
-   cross-sections.
+   cross-sections and line lists (CFC-11, CFC-12, and SF6 are absorption-cross-section species; NF3
+   is line-by-line). These cross-sections are laboratory measurements valid only near terrestrial
+   temperatures (roughly 190 to 300 K), so the technosignature retrieval is applied only to cool and
+   temperate targets. See [08-review-and-gaps.md](08-review-and-gaps.md) C2 and M2.
 3. Confounders. Include methane, ammonia, hydrogen sulphide, clouds, and temperature structure,
    whose absorption overlaps the target bands, so the model learns to separate them.
 4. Instrument noise. Inject realistic random noise with PandExo, scaled to host-star brightness and
@@ -37,12 +40,16 @@ An upper limit is a tail quantile of a probability distribution, so the model mu
 A single-value regressor cannot express the result. The design is hybrid:
 
 - Classical nested-sampling retrieval (dynesty, MultiNest, or UltraNest). A rigorous baseline with no
-  simulation-to-real training gap. It produces the trustworthy headline limits, and it is feasible
-  because the meaningful sample is small.
+  simulation-to-real training gap, although it shares the forward-model gap (the same petitRADTRANS
+  physics and the same temperature-limited cross-sections). It produces the trustworthy headline
+  limits, and it is feasible because the meaningful sample is small.
 - Amortised machine-learning model. Neural posterior estimation (NPE) maps each noisy spectrum
   directly to an abundance posterior. This is the methodological novelty and the scalable, reusable
   artefact. NPE is preferred over Monte Carlo dropout, which is least reliable precisely in the
-  distribution tail where the result lives.
+  distribution tail where the result lives. Being trained on synthetic spectra, NPE inherits the
+  simulation-to-real gap that nested sampling avoids; this risk is controlled by the cross-check
+  against the classical retrieval and by simulation-based-inference coverage diagnostics (coverage
+  tests, simulation-based calibration, or TARP). See [08-review-and-gaps.md](08-review-and-gaps.md) S3.
 
 A single noise-aware model maps spectrum to posterior directly. It is not a denoiser-then-detector
 chain, which would erase sub-noise signal and discard uncertainty.
@@ -57,22 +64,35 @@ met.
 
 ## Validation and analysis
 
-The limits are validated by:
+Validation establishes three distinct claims, which must not be conflated (see
+[08-review-and-gaps.md](08-review-and-gaps.md) C3):
 
-- Injection-and-recovery on held-out synthetic spectra.
-- Posterior calibration (coverage) tests.
-- Agreement between the machine-learning and classical methods.
-- Recovery of Earth's known CFC content from a real out-of-distribution benchmark spectrum
-  (Lustig-Yaeger et al., 2023), which the proposal singles out as the most important check.
+- Calibration. Posterior coverage tests confirm a stated credible interval contains the truth the
+  claimed fraction of the time.
+- Sensitivity. Injection-and-recovery on held-out synthetic spectra, at both the 10 ppm and 50 ppm
+  noise floors, establishes what abundance the pipeline can bound at realistic JWST noise.
+- Forward-model fidelity. Recovery of CFC-11 and CFC-12 from Earth's real, out-of-distribution
+  transmission spectrum (Lustig-Yaeger et al., 2023). This recovery holds in the noiseless limit of
+  that high-signal-to-noise empirical spectrum: it tests the forward model and the spectral unmixing
+  on real overlapping features, and is not a demonstration of sensitivity at JWST noise levels
+  (Earth's real CFCs, at hundreds of parts per trillion, are undetectable under realistic noise).
+
+The machine-learning and classical posteriors must also agree within their stated uncertainties, and
+a near-infrared input must return a non-informative limit (the null control).
 
 Analysis rules:
 
-- Where a planet has multiple observed transits, average them before inference to improve the
-  signal-to-noise ratio.
-- For each planet and gas, report the upper credible bound of the posterior as the upper limit.
-- Claim a positive detection only for a feature exceeding three standard deviations across multiple
-  independent spectral channels that cannot be explained by any modelled confounder. Anything short
-  of this is a null result with an upper limit.
+- Combine spectra with care, distinguishing two cases. Genuine repeat transits of one planet are
+  co-added (signal-to-noise-weighted) before inference. Multiple published pipeline reductions of the
+  same transit (common in the archive, for example WASP-39 b) are not independent transits; choose a
+  reference reduction or model across them, and record the choice. See
+  [08-review-and-gaps.md](08-review-and-gaps.md) S5.
+- For each planet and gas, report the upper credible bound of the posterior (for example the 95
+  percent bound) as the upper limit.
+- Claim a positive detection only for a feature exceeding five standard deviations across multiple
+  independent spectral channels that cannot be explained by any modelled confounder; between three
+  and five standard deviations is reported as tentative, not detected. Anything short of this is a
+  null result with an upper limit. See [08-review-and-gaps.md](08-review-and-gaps.md) S2.
 
 ## Implementation stack
 

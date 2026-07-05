@@ -1,0 +1,45 @@
+#!/bin/sh
+# pre-commit hook: protect the frozen submission and keep raw/bulk data out of
+# the repository. Complements the commit-msg attribution stripper.
+#
+# Blocks the commit (exit 1) if the staged set contains:
+#   - any change to docs.txt (the verbatim submitted proposal, frozen)
+#   - any raw/bulk data, opacity table, or model artefact, even if force-added
+# Warns but allows (exit 0 path) if the staged set contains:
+#   - a change to docs/proposal.md (the mirror; its substance must not change)
+#
+# Enable once per clone with:  git config core.hooksPath .githooks
+# See CLAUDE.md, .claude/rules/documentation.md, and .claude/rules/data.md.
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$staged" ] && exit 0
+
+fail=0
+
+# 1. Frozen submission: docs.txt must never change.
+if printf '%s\n' "$staged" | grep -qxF 'docs.txt'; then
+  echo "pre-commit: BLOCKED. docs.txt is the frozen submitted proposal and must not be committed with changes." >&2
+  echo "            Record corrections in docs/08-review-and-gaps.md and the working docs. See CLAUDE.md." >&2
+  fail=1
+fi
+
+# 2. Raw/bulk data, opacity tables, and model artefacts must never be committed.
+data_re='(^|/)(data/raw/|data/downloads/|data/cache/|data/synthetic/|data/training/|data/opacities/|opacity_data/|mastDownload/|models/|checkpoints/)|\.(fits|fits\.gz|h5|hdf5|npy|npz|tbl|pt|pth|ckpt|pkl|joblib)$'
+bulk=$(printf '%s\n' "$staged" | grep -Ei "$data_re")
+if [ -n "$bulk" ]; then
+  echo "pre-commit: BLOCKED. These look like raw/bulk data or model artefacts and must never be committed:" >&2
+  printf '%s\n' "$bulk" | sed 's/^/    /' >&2
+  echo "            Only small, curated, human-inspectable catalogues belong in git. See .claude/rules/data.md." >&2
+  fail=1
+fi
+
+# 3. Mirror of the submission: warn, do not block.
+if printf '%s\n' "$staged" | grep -qxF 'docs/proposal.md'; then
+  echo "pre-commit: NOTE. docs/proposal.md mirrors the frozen submission; its substance must not change (formatting and the corrections pointer only)." >&2
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo "pre-commit: commit aborted. Use 'git commit --no-verify' only if you are certain and have the user's go-ahead." >&2
+  exit 1
+fi
+exit 0

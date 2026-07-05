@@ -4,6 +4,9 @@ This is a formatted, readable copy of the submitted proposal. The verbatim origi
 [../docs.txt](../docs.txt) and remains the source of truth. Content here is unchanged in substance;
 only the formatting has been cleaned up.
 
+> Corrections and refinements identified since submission are recorded in
+> [08-review-and-gaps.md](08-review-and-gaps.md). This mirror is left unchanged in substance.
+
 - Institution: University of Mauritius, Faculty of Information, Communication and Digital Technologies
 - Prepared by: Munazir Ramjhun, Atish Joottun, and Tanoo Joyekurun
 

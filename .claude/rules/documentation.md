@@ -32,6 +32,23 @@ A collaborator on a clean machine must be able to open every link in the docs an
 asking the author to send a file. Claude Code's own local memory and a developer's scratch or temp
 files are tooling, not project documentation, as long as nothing in the repo references them.
 
+## The submitted proposal is frozen
+
+[docs.txt](../../docs.txt) is the verbatim submitted proposal and the source of truth. It is never
+edited. [docs/proposal.md](../../docs/proposal.md) is its faithful readable mirror and is never
+changed in substance; formatting and a single pointer to the corrections record are the only touches
+allowed.
+
+The working documentation ([docs/01](../../docs/01-aims-and-objectives.md) through
+[docs/07](../../docs/07-roadmap.md)) is the living narrative and may be corrected as understanding
+improves, but every correction that diverges from the submission is recorded in
+[docs/08-review-and-gaps.md](../../docs/08-review-and-gaps.md) and points back to the entry that
+justifies it. This keeps the submission intact for the record while letting the science stay current.
+
+Enforcement is layered: a `PreToolUse` hook blocks edits to `docs.txt`, and the `pre-commit` hook
+blocks committing a change to it. See [.githooks/pre-commit](../../.githooks/pre-commit) and the
+hooks in [.claude/settings.json](../../.claude/settings.json).
+
 ## Scientific claims carry a source
 
 Any physical value, cross-section, instrument parameter, detectability figure, or method choice

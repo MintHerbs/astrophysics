@@ -51,5 +51,18 @@
       "PowerShell(git checkout -- *)",
       "PowerShell(git branch -D*)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/protect_frozen_docs.py\""
+          }
+        ]
+      }
+    ]
   }
 }

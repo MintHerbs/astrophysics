@@ -18,7 +18,8 @@ science background. Chemistry and astronomy terms are explained as they appear.
 - MIRI: JWST's Mid-Infrared Instrument. Covers the mid-infrared band where the target gases absorb.
   The scientifically meaningful sample comes from MIRI.
 - Near-infrared instruments: JWST's instruments covering the near-infrared, behind most of the
-  archive. The target gases do not absorb there, so near-infrared spectra serve as a null control.
+  archive. The target gases have no strong diagnostic band there, so near-infrared spectra serve as a
+  null control.
 - Habitable / rocky world: a small, rocky planet where liquid water could plausibly exist, such as
   the TRAPPIST-1 planets. The scientifically interesting targets.
 - Confounder: a gas or effect (methane, ammonia, hydrogen sulphide, clouds, temperature structure)
@@ -65,10 +66,21 @@ science background. Chemistry and astronomy terms are explained as they appear.
   are used, an optimistic 10 ppm and a conservative 50 ppm.
 - Signal-to-noise ratio (SNR): how large a signal is relative to the noise; an inclusion criterion
   for admitting a spectrum.
+- Detection threshold: the bar for claiming a detection rather than an upper limit. Here, five
+  standard deviations across multiple independent channels not explained by any confounder; three to
+  five is tentative; below that is a null result reported as an upper limit.
+- Pipeline reduction: one team's processing of a raw observation into a spectrum. The archive may
+  hold several reductions of the same transit; these are not independent transits.
+- Cross-section versus line list: two forms of opacity data. Heavy molecules (CFC-11, CFC-12, SF6)
+  are tabulated as absorption cross-sections, valid only over their measured temperature range; NF3
+  has a line-by-line list. HITRAN2020 provides both forms.
+- Simulation-to-real gap: the risk that a model trained on synthetic spectra behaves differently on
+  real data. Nested sampling avoids the training gap; NPE does not, so it is cross-checked against the
+  classical retrieval.
 
 ## Tools and archives
 
-- petitRADTRANS: the radiative-transfer forward model (Molliere et al., 2019).
+- petitRADTRANS: the radiative-transfer forward model (Mollière et al., 2019).
 - HITRAN2020: the molecular spectroscopic database of cross-sections (Gordon et al., 2022).
 - PandExo: JWST and HST instrument-noise simulator (Batalha et al., 2017).
 - MAST: the Mikulski Archive for Space Telescopes, JWST's data archive.
