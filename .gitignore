@@ -82,11 +82,28 @@ data/cache/
 # astroquery writes downloaded MAST products under a mastDownload/ tree
 mastDownload/
 data/MAST/mastDownload/
-data/MAST/downloads/
 
-# Spectrum data files fetched from the NASA Exoplanet Archive (never committed)
-data/NASA_Archive/spectra/
-data/NASA_Archive/downloads/
+# Per-source working folders: downloaded raw spectra and generated plots. The
+# folder and its README stay tracked so the layout is visible on a fresh clone;
+# everything downloaded or generated inside is never committed. To keep a single
+# curated figure, force-add it (for example: git add -f data/MAST/plots/x.png).
+data/MAST/raw/*
+!data/MAST/raw/README.md
+data/MAST/plots/*
+!data/MAST/plots/README.md
+data/NASA_Archive/raw/*
+!data/NASA_Archive/raw/README.md
+data/NASA_Archive/plots/*
+!data/NASA_Archive/plots/README.md
+
+# Regenerable build output: the tidy per-point spectra table assembled from the
+# downloaded .tbl files by build_nasa_spectra_dataset.py. Rebuild it locally; to
+# track a curated copy, force-add it (git add -f).
+data/NASA_Archive/nasa_miri_spectra_points.csv
+
+# Regenerable build output: the numeric median spectra assembled from the
+# git-ignored raw X1DINTS FITS by plot_mast_spectrum.py. Rebuild it locally.
+data/MAST/mast_median_spectra.csv
 
 # Bulk spectra in common astronomy and array formats
 *.fits
