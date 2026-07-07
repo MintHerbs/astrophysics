@@ -1,0 +1,15 @@
+{
+  "codegraph-prompt-hook": {
+    "PreInvocation": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "codegraph prompt-hook"
+          }
+        ]
+      }
+    ]
+  }
+}

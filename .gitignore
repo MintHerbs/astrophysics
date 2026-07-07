@@ -1,3 +1,10 @@
+# ---- Secrets and credentials ----
+# Never commit tokens, keys, or credential files. Keep these out of the repo entirely.
+access.txt
+*.token
+*.pem
+*.key
+
 # ---- Python ----
 __pycache__/
 *.py[cod]

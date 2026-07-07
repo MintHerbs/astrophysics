@@ -86,6 +86,7 @@ under `src/`. See the roadmap in [docs/07-roadmap.md](docs/07-roadmap.md).
   docs/                  The working documentation (start at docs/README.md)
   .githooks/             Versioned git hooks (commit-msg attribution stripper; pre-commit data and frozen-docs guard)
   src/                   Implementation, added in stages (package: technosig)
+  frontend/              Local Next.js viewer and control surface for the data scripts (see frontend/README.md)
 ```
 
 ## Getting started
@@ -118,6 +119,17 @@ built.
 Raw spectra and large downloaded archive products are never committed to this repository. Only
 derived, lightweight catalogues and code live here. See [docs/04-data-sources.md](docs/04-data-sources.md)
 and the data rule in [.claude/rules/data.md](.claude/rules/data.md).
+
+## Frontend (local viewer)
+
+An optional local web app, the JWST MIRI Spectra Explorer, lives in [frontend/](frontend/). It
+displays the dataset under [data/](data/) and acts as a control surface for the existing fetch and
+build scripts there: a searchable picker downloads real MAST observations on demand, and a drop zone
+runs the NASA build step on files fetched from the archive by hand. It is a viewer and a launcher,
+not the science pipeline: it never runs retrieval, never computes an upper limit, and fabricates
+nothing. It is a single-user local developer tool (its API routes write under `data/` and spawn
+local Python with no authentication) and is unsafe to deploy on the open internet as-is. Setup, run,
+and build steps are in [frontend/README.md](frontend/README.md).
 
 ## Documentation
 
