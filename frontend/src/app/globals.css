@@ -785,3 +785,8 @@ code.inline {
   background-color: color-mix(in srgb, var(--md-sys-color-tertiary-container) 20%, transparent) !important;
   color: var(--md-sys-color-on-surface) !important;
 }
+
+.manual-highlighted-col {
+  background-color: color-mix(in srgb, var(--md-sys-color-primary-container) 20%, transparent) !important;
+  color: var(--md-sys-color-on-surface) !important;
+}
