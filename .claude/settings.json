@@ -50,6 +50,21 @@
       "PowerShell(git push -f*)",
       "PowerShell(git checkout -- *)",
       "PowerShell(git branch -D*)"
+    ],
+    "allow": [
+      "mcp__codegraph__*"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "codegraph prompt-hook"
+          }
+        ]
+      }
     ]
   },
   "hooks": {

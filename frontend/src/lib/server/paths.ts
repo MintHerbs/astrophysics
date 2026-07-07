@@ -1,0 +1,28 @@
+/**
+ * Central path resolution for the local, filesystem-backed API routes.
+ *
+ * This module and everything under src/lib/server and src/app/api runs only on
+ * the Node server process behind `npm run dev` / `npm start`, never in the
+ * browser. It reads and writes the real dataset under ../data and invokes the
+ * existing Python pipeline scripts there; it is a thin local control surface
+ * over those scripts, not a replacement for them.
+ */
+
+import path from "node:path";
+
+export const FRONTEND_DIR = path.resolve(process.cwd());
+export const REPO_ROOT = path.resolve(FRONTEND_DIR, "..");
+export const DATA_DIR = path.join(REPO_ROOT, "data");
+
+export const NASA_DIR = path.join(DATA_DIR, "NASA_Archive");
+export const NASA_INVENTORY_CSV = path.join(NASA_DIR, "nasa_miri_spectra.csv");
+export const NASA_POINTS_CSV = path.join(NASA_DIR, "nasa_miri_spectra_points.csv");
+export const NASA_RAW_DIR = path.join(NASA_DIR, "raw");
+export const NASA_BUILD_SCRIPT = path.join(NASA_DIR, "build_nasa_spectra_dataset.py");
+
+export const MAST_DIR = path.join(DATA_DIR, "MAST");
+export const MAST_INVENTORY_CSV = path.join(MAST_DIR, "mast_miri_inventory.csv");
+export const MAST_MEDIAN_CSV = path.join(MAST_DIR, "mast_median_spectra.csv");
+export const MAST_RAW_DIR = path.join(MAST_DIR, "raw");
+export const MAST_DOWNLOAD_SCRIPT = path.join(MAST_DIR, "download_mast_products.py");
+export const MAST_PLOT_SCRIPT = path.join(MAST_DIR, "plot_mast_spectrum.py");

@@ -1,0 +1,758 @@
+/*
+ * Global styles, built on Material Design 3 (Material You).
+ *
+ * Colour comes from the generated tonal palette in src/lib/theme.ts, injected
+ * as --md-sys-color-* custom properties. This file adds the MD3 shape scale,
+ * type scale, elevation, and the component styles the app uses. Everything is
+ * expressed against the colour tokens so light and dark are one system.
+ */
+
+:root {
+  /* MD3 shape scale (corner radii). */
+  --md-shape-xs: 4px;
+  --md-shape-sm: 8px;
+  --md-shape-md: 12px;
+  --md-shape-lg: 16px;
+  --md-shape-xl: 28px;
+  --md-shape-full: 999px;
+
+  /* MD3 elevation (approximate tonal shadows). */
+  --md-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.14), 0 1px 3px rgba(0, 0, 0, 0.10);
+  --md-elevation-2: 0 1px 2px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.14);
+  --md-elevation-3: 0 4px 8px rgba(0, 0, 0, 0.16), 0 1px 3px rgba(0, 0, 0, 0.14);
+
+  --font-sans: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, "SFMono-Regular", "Consolas", monospace;
+
+  --page-max: 1200px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* ----------------------------- Type scale ------------------------------- */
+
+.type-display {
+  font-size: clamp(1.9rem, 1.2rem + 2vw, 2.6rem);
+  line-height: 1.15;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.type-headline {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.type-title {
+  font-size: 1.125rem;
+  line-height: 1.4;
+  font-weight: 500;
+}
+.type-body {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  font-weight: 400;
+}
+.type-label {
+  font-size: 0.8rem;
+  line-height: 1.3;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.muted {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* --------------------------- Material Symbols --------------------------- */
+
+.material-symbols-rounded {
+  font-family: "Material Symbols Rounded";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  user-select: none;
+}
+
+/* -------------------------------- Layout -------------------------------- */
+
+.page {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 clamp(16px, 3vw, 32px) 64px;
+}
+
+.app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: var(--md-sys-color-surface-container);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  backdrop-filter: saturate(1.1);
+}
+.app-bar-inner {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 12px clamp(16px, 3vw, 32px);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.app-bar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.app-bar-logo {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-shape-md);
+  display: grid;
+  place-items: center;
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+.app-bar-logo .material-symbols-rounded {
+  font-size: 26px;
+}
+.app-bar-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--md-sys-color-on-surface);
+}
+.app-bar-sub {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.app-bar-spacer {
+  flex: 1 1 auto;
+}
+
+/* --------------------------- Segmented button --------------------------- */
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-shape-full);
+  overflow: hidden;
+  background-color: transparent;
+}
+.segmented.large .segmented-btn {
+  padding: 12px 22px;
+  font-size: 0.95rem;
+}
+.segmented-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  padding: 9px 18px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.segmented-btn + .segmented-btn {
+  border-left: 1px solid var(--md-sys-color-outline);
+}
+.segmented-btn:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+}
+.segmented-btn[aria-pressed="true"],
+.segmented-btn[aria-selected="true"] {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+.segmented-btn .material-symbols-rounded {
+  font-size: 18px;
+}
+
+/* -------------------------------- Tabs ---------------------------------- */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  margin: 20px 0 24px;
+  overflow-x: auto;
+}
+.tab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  border-radius: var(--md-shape-sm) var(--md-shape-sm) 0 0;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.tab:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+}
+.tab[aria-selected="true"] {
+  color: var(--md-sys-color-primary);
+  border-bottom-color: var(--md-sys-color-primary);
+}
+.tab .material-symbols-rounded {
+  font-size: 20px;
+}
+
+/* -------------------------------- Cards --------------------------------- */
+
+.card {
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-shape-lg);
+  padding: 20px 22px;
+}
+.card.raised {
+  box-shadow: var(--md-elevation-1);
+}
+.card-title {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* -------------------------------- Chips --------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--md-shape-sm);
+  font-size: 0.78rem;
+  font-weight: 500;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+  white-space: nowrap;
+}
+.chip .material-symbols-rounded {
+  font-size: 16px;
+}
+.chip.transmission {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border-color: transparent;
+}
+.chip.demo {
+  background-color: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+  border-color: transparent;
+}
+
+/* ------------------------------- Banners -------------------------------- */
+
+.banner {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: var(--md-shape-md);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background-color: var(--md-sys-color-surface-container);
+}
+.banner .material-symbols-rounded {
+  flex: none;
+  font-size: 22px;
+  color: var(--md-sys-color-primary);
+}
+.banner.info {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border-color: transparent;
+}
+.banner.info .material-symbols-rounded {
+  color: var(--md-sys-color-on-secondary-container);
+}
+.banner.caution {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border-color: transparent;
+}
+.banner.caution .material-symbols-rounded {
+  color: var(--md-sys-color-on-error-container);
+}
+.banner p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.banner strong {
+  font-weight: 700;
+}
+
+/* ------------------------------ Icon button ----------------------------- */
+
+.btn-icon {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-shape-full);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+.btn-icon:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 10%, transparent);
+}
+.btn-icon .material-symbols-rounded {
+  font-size: 24px;
+}
+
+/* ------------------------------- Select --------------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.select select {
+  appearance: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--md-sys-color-on-surface);
+  background-color: var(--md-sys-color-surface-container-highest);
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-shape-xs);
+  padding: 12px 44px 12px 14px;
+  width: 100%;
+  cursor: pointer;
+}
+.select select:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 1px;
+}
+.select .material-symbols-rounded {
+  position: absolute;
+  right: 12px;
+  pointer-events: none;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* -------------------------------- Stats --------------------------------- */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+.stat {
+  background-color: var(--md-sys-color-surface-container-high);
+  border-radius: var(--md-shape-md);
+  padding: 18px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+.stat-value {
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--md-sys-color-primary);
+}
+.stat-label {
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* -------------------------------- Table --------------------------------- */
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-shape-md);
+}
+table.data {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.88rem;
+}
+table.data th,
+table.data td {
+  text-align: left;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  vertical-align: top;
+}
+table.data thead th {
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+table.data tbody tr:last-child td {
+  border-bottom: none;
+}
+table.data tbody tr:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);
+}
+table.data code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--md-sys-color-primary);
+}
+
+/* --------------------------- Empty / code ------------------------------- */
+
+.empty {
+  text-align: center;
+  padding: 48px 24px;
+  border: 2px dashed var(--md-sys-color-outline-variant);
+  border-radius: var(--md-shape-lg);
+  background-color: var(--md-sys-color-surface-container-low);
+}
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 12px;
+  border-radius: var(--md-shape-full);
+  display: grid;
+  place-items: center;
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.empty-icon .material-symbols-rounded {
+  font-size: 34px;
+}
+.steps {
+  margin: 18px auto 0;
+  max-width: 720px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  counter-reset: step;
+}
+.step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.step-num {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--md-shape-full);
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+.step-body {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding-top: 2px;
+  word-break: break-word;
+}
+.code {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-shape-xs);
+  padding: 8px 12px;
+  display: block;
+  overflow-x: auto;
+  white-space: pre;
+}
+code.inline {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background-color: var(--md-sys-color-surface-container-highest);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+/* -------------------------------- Chart --------------------------------- */
+
+.chart-shell {
+  background-color: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-shape-md);
+  padding: 12px 8px 4px;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 8px 12px 4px;
+  font-size: 0.8rem;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex: none;
+}
+.legend-swatch.line {
+  height: 3px;
+  border-radius: 2px;
+}
+.chart-tooltip {
+  background-color: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  border-radius: var(--md-shape-sm);
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  box-shadow: var(--md-elevation-2);
+  line-height: 1.5;
+}
+.chart-tooltip .tt-key {
+  opacity: 0.8;
+}
+
+/* ----------------------------- Disclosure -------------------------------- */
+
+.disclosure-header {
+  appearance: none;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0;
+  font-family: inherit;
+}
+.disclosure-header:hover .type-title {
+  color: var(--md-sys-color-primary);
+}
+
+/* ------------------------------- Dropzone -------------------------------- */
+
+.dropzone {
+  border: 2px dashed var(--md-sys-color-outline);
+  border-radius: var(--md-shape-lg);
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  background-color: var(--md-sys-color-surface-container-low);
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+.dropzone:hover,
+.dropzone:focus-visible {
+  border-color: var(--md-sys-color-primary);
+  background-color: color-mix(in srgb, var(--md-sys-color-primary) 6%, var(--md-sys-color-surface-container-low));
+  outline: none;
+}
+.dropzone.active {
+  border-color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.file-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 12px;
+  border-radius: var(--md-shape-sm);
+  background-color: var(--md-sys-color-surface-container-highest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  font-size: 0.82rem;
+}
+.file-chip-remove {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.file-chip-remove:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+}
+
+.segmented-btn.filled {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  border: none;
+  padding: 11px 20px;
+}
+.segmented-btn.filled:hover {
+  background-color: var(--md-sys-color-primary);
+  opacity: 0.92;
+}
+.segmented-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spin-icon {
+  animation: spin 1000ms linear infinite;
+}
+
+.catalog-controls {
+  align-items: center;
+}
+.catalog-controls input[type="search"]:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 1px;
+}
+
+/* ------------------------------- Utilities ------------------------------ */
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.divider {
+  height: 1px;
+  background-color: var(--md-sys-color-outline-variant);
+  border: none;
+  margin: 4px 0;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.kv {
+  display: grid;
+  grid-template-columns: minmax(140px, auto) 1fr;
+  gap: 6px 18px;
+  font-size: 0.9rem;
+}
+.kv dt {
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 500;
+}
+.kv dd {
+  margin: 0;
+  word-break: break-word;
+}
+.spinner {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 4px solid var(--md-sys-color-surface-container-highest);
+  border-top-color: var(--md-sys-color-primary);
+  animation: spin 800ms linear infinite;
+  margin: 0 auto;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

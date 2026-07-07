@@ -19,6 +19,8 @@ of what exists in the archive, with a reference for retrieving each item on purp
 
 ## Contents
 
+Inventories and their fetch scripts (committed, lightweight):
+
 - [MAST/fetch_mast_miri_inventory.py](MAST/fetch_mast_miri_inventory.py): queries MAST via astroquery.
 - [MAST/mast_miri_inventory.csv](MAST/mast_miri_inventory.csv): the MAST inventory (one row per
   observation).
@@ -26,6 +28,19 @@ of what exists in the archive, with a reference for retrieving each item on purp
   Exoplanet Archive TAP service.
 - [NASA_Archive/nasa_miri_spectra.csv](NASA_Archive/nasa_miri_spectra.csv): the NASA inventory (one
   row per published spectrum).
+
+Retrieval and plotting tools, and the working folders they populate (the folder
+READMEs are committed; the downloaded data and generated plots are git-ignored):
+
+- [MAST/download_mast_products.py](MAST/download_mast_products.py): downloads X1DINTS products for
+  named targets into `MAST/raw/` (opt-in and per-target, because the products are large).
+- [MAST/plot_mast_spectrum.py](MAST/plot_mast_spectrum.py): plots the median extracted spectrum per
+  observation from `MAST/raw/` into `MAST/plots/`.
+- [NASA_Archive/build_nasa_spectra_dataset.py](NASA_Archive/build_nasa_spectra_dataset.py): parses the
+  `.tbl` spectra in `NASA_Archive/raw/` into a tidy points CSV and one plot per spectrum in
+  `NASA_Archive/plots/`.
+- `MAST/raw/`, `MAST/plots/`, `NASA_Archive/raw/`, `NASA_Archive/plots/`: working folders. See the
+  README in each for exactly how to populate it.
 
 ## Row counts from the most recent run (2026-07-04)
 
@@ -118,17 +133,21 @@ Columns (units stated in the names):
 | `product_uri` | canonical MAST product URI (`mast:...`), the calibrated 1-D product (X1DINTS) |
 | `product_download_url` | full download URL built from the product URI (see below) |
 
-Retrieving the actual data: the CSV is an inventory, not the spectra. To download a product on
-purpose, pass its `product_uri` to the MAST download endpoint, which is the value already given in
-`product_download_url`:
+Retrieving the actual data: the CSV is an inventory, not the spectra. Use
+[MAST/download_mast_products.py](MAST/download_mast_products.py) to fetch the X1DINTS products for
+named targets into `MAST/raw/`, then [MAST/plot_mast_spectrum.py](MAST/plot_mast_spectrum.py) to plot
+the median extracted spectrum per observation into `MAST/plots/`. See
+[MAST/raw/README.md](MAST/raw/README.md) for commands. Under the hood each product is fetched from
 
 ```
 https://mast.stsci.edu/api/v0.1/Download/file?uri=<product_uri>
 ```
 
-This endpoint was verified to return a product (HTTP 200) for a public X1DINTS file. Downloaded FITS
-products are large and must never be committed; `.gitignore` blocks `*.fits` and the download
-directories.
+the value recorded in `product_download_url` (verified HTTP 200 for a public X1DINTS file). These
+products are large (roughly 0.5 to 5 GB per observation) and must never be committed; `.gitignore`
+blocks `*.fits` and the `raw/` contents. Note X1DINTS is the per-integration extracted flux, not a
+transmission spectrum: deriving transit depth versus wavelength needs a light-curve fit that is not
+part of this inventory step.
 
 Field units are documented at the MAST CAOM field reference:
 <https://mast.stsci.edu/api/v0/_c_a_o_mfields.html> (em_min and em_max in nm; t_min, t_max and
@@ -182,8 +201,12 @@ This is confirmed by the archive documentation
 (<https://exoplanetarchive.ipac.caltech.edu/docs/atmospheres/atmospheres_work.html>) and independent
 usage reports. The stable, reachable reference for each spectrum is therefore its `reference_bibcode`
 and the `reference_url` (ADS) that this inventory records; `spec_path` is kept verbatim for
-completeness. Downloaded `.tbl` files must never be committed; `.gitignore` blocks `*.tbl` and the
-download directories.
+completeness. Step-by-step download instructions are in
+[NASA_Archive/raw/README.md](NASA_Archive/raw/README.md). Once the `.tbl` files are in
+`NASA_Archive/raw/`, run [NASA_Archive/build_nasa_spectra_dataset.py](NASA_Archive/build_nasa_spectra_dataset.py)
+to parse them into `NASA_Archive/nasa_miri_spectra_points.csv` (one row per spectral point) and a plot
+per spectrum in `NASA_Archive/plots/`. Downloaded `.tbl` files must never be committed; `.gitignore`
+blocks `*.tbl` and the `raw/` contents.
 
 Column units were confirmed from the table's own schema (`TAP_SCHEMA.columns` for `table_name =
 'spectra'`): `minwavelng` and `maxwavelng` in microns, `mintranmid` and `maxtranmid` in BJD.
