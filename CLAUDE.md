@@ -168,3 +168,10 @@ Invoke each with a slash command:
   [docs/README.md](docs/README.md).
 - [.githooks/](.githooks/): versioned git hooks.
 - [src/](src/): implementation, added in stages (package `technosig`).
+- [data/](data/): lightweight archive inventories (MAST and NASA Exoplanet Archive) and fetch
+  scripts. No bulk data; see [.claude/rules/data.md](.claude/rules/data.md).
+- [frontend/](frontend/): the JWST MIRI Spectra Explorer, a local Next.js viewer and control surface
+  for the data scripts. It is not the science pipeline and fabricates nothing. Nested context in
+  [frontend/CLAUDE.md](frontend/CLAUDE.md) (auto-loaded when working under `frontend/`); frontend
+  rules in [.claude/rules/frontend.md](.claude/rules/frontend.md); full description in
+  [frontend/README.md](frontend/README.md).
