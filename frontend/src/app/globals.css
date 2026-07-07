@@ -7,6 +7,9 @@
  * expressed against the colour tokens so light and dark are one system.
  */
 
+@import "ag-grid-community/styles/ag-grid.css";
+@import "ag-grid-community/styles/ag-theme-quartz.css";
+
 :root {
   /* MD3 shape scale (corner radii). */
   --md-shape-xs: 4px;
@@ -755,4 +758,30 @@ code.inline {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* -------------------------------- Ag-Grid --------------------------------- */
+
+.ag-theme-quartz {
+  --ag-background-color: var(--md-sys-color-surface-container-low);
+  --ag-foreground-color: var(--md-sys-color-on-surface);
+  --ag-header-background-color: var(--md-sys-color-surface-container-high);
+  --ag-header-foreground-color: var(--md-sys-color-on-surface-variant);
+  --ag-border-color: var(--md-sys-color-outline-variant);
+  --ag-row-hover-color: color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);
+  --ag-selected-row-background-color: color-mix(in srgb, var(--md-sys-color-primary) 15%, transparent);
+  --ag-font-family: var(--font-sans);
+  --ag-font-size: 0.88rem;
+  border-radius: var(--md-shape-md);
+  overflow: hidden;
+}
+
+.ag-theme-quartz .ag-root-wrapper {
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-shape-md);
+}
+
+.highlighted-col {
+  background-color: color-mix(in srgb, var(--md-sys-color-tertiary-container) 20%, transparent) !important;
+  color: var(--md-sys-color-on-surface) !important;
 }
