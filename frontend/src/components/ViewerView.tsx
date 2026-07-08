@@ -5,10 +5,10 @@ import dynamic from "next/dynamic";
 import type { SourceData, Spectrum } from "@/lib/types";
 import type { SourceContent } from "@/lib/content";
 import { fmtInt, fmtMeta, fmtRange } from "@/lib/format";
+import { SCIENCE_BANDS } from "@/lib/science";
 import Icon from "./Icon";
 import EmptyState from "./EmptyState";
 import ChartBoundary from "./ChartBoundary";
-import NasaUploadPanel from "./NasaUploadPanel";
 import NasaCatalogPicker from "./NasaCatalogPicker";
 import MastCatalogPicker from "./MastCatalogPicker";
 
@@ -52,14 +52,38 @@ export default function ViewerView({ dataset, content, selectedId, onSelect, onD
     return [...map.entries()];
   }, [dataset]);
 
-  const selected = dataset.spectra.find((s) => s.id === selectedId) ?? dataset.spectra[0];
+  /**
+   * When nothing has been explicitly selected yet, default to a spectrum that
+   * actually overlaps the technosignature target window (8.6 to 11.8 um)
+   * rather than just the first catalogue row, so the science-band annotation
+   * is visible on first load whenever a MIRI spectrum is available.
+   */
+  const defaultSpectrum = useMemo(() => {
+    const windowBand = SCIENCE_BANDS.find((b) => b.kind === "window");
+    if (windowBand && windowBand.kind === "window") {
+      const inWindow = dataset.spectra.find(
+        (s) =>
+          s.pointCount > 0 &&
+          s.wavelength_min_um !== null &&
+          s.wavelength_max_um !== null &&
+          s.wavelength_max_um > windowBand.min_um &&
+          s.wavelength_min_um < windowBand.max_um,
+      );
+      if (inWindow) return inWindow;
+    }
+    return dataset.spectra[0];
+  }, [dataset]);
+
+  const selected = dataset.spectra.find((s) => s.id === selectedId) ?? defaultSpectrum;
   const isTransmission = content.measurement.isTransmission;
   const populatePanel =
     content.key === "nasa" ? (
-      <>
-        <NasaCatalogPicker spectra={dataset.spectra} defaultOpen={!dataset.plottable} />
-        <NasaUploadPanel defaultOpen={!dataset.plottable} onDone={onDataChanged} />
-      </>
+      <NasaCatalogPicker
+        spectra={dataset.spectra}
+        defaultOpen={!dataset.plottable}
+        selectedId={selected?.id}
+        onSelect={onSelect}
+      />
     ) : (
       <MastCatalogPicker defaultOpen={!dataset.plottable} onDone={onDataChanged} />
     );

@@ -9,38 +9,13 @@ import {
   IHeaderParams,
 } from "ag-grid-community";
 import Icon from "./Icon";
+import { NASA_HIGHLIGHTS, MAST_HIGHLIGHTS } from "@/lib/rawColumnHighlights";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface Props {
   source: "nasa" | "mast";
 }
-
-const NASA_HIGHLIGHTS = [
-  "pl_name",
-  "pl_trandep",
-  "pl_trandur",
-  "pl_rade",
-  "star_radius_sun",
-  "star_temp_k",
-  "star_surface_gravity",
-  "pl_eqt",
-  "star_vmag",
-  "star_jmag",
-  "star_hmag",
-  "star_kmag",
-];
-
-const MAST_HIGHLIGHTS = [
-  "WAVELENGTH",
-  "TRANSIT_DEPTH",
-  "FLUX",
-  "ERR",
-  "FLUX_ERROR",
-  "INSTRUMENT",
-  "FILTER",
-  "GRATING",
-];
 
 // Custom Header Component to add a highlight toggle
 const CustomHeader = (props: IHeaderParams & { toggleHighlight: (colId: string) => void; isHighlighted: boolean }) => {

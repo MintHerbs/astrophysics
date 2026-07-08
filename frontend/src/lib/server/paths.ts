@@ -20,6 +20,15 @@ export const NASA_POINTS_CSV = path.join(NASA_DIR, "nasa_miri_spectra_points.csv
 export const NASA_RAW_DIR = path.join(NASA_DIR, "raw");
 export const NASA_BUILD_SCRIPT = path.join(NASA_DIR, "build_nasa_spectra_dataset.py");
 
+/**
+ * Local archive dump: a TAP export of the Atmospheric Spectroscopy table
+ * (spectra.csv) alongside the per-spectrum .tbl files it references, placed
+ * directly under NASA_DIR (not the raw/ upload folder above). This is the
+ * live source for the viewer; each spectrum's points are parsed from its
+ * .tbl file on every request rather than pre-built into a CSV.
+ */
+export const NASA_SPECTRA_CSV = path.join(NASA_DIR, "spectra.csv");
+
 export const MAST_DIR = path.join(DATA_DIR, "MAST");
 export const MAST_INVENTORY_CSV = path.join(MAST_DIR, "mast_miri_inventory.csv");
 export const MAST_MEDIAN_CSV = path.join(MAST_DIR, "mast_median_spectra.csv");

@@ -170,6 +170,9 @@ Invoke each with a slash command:
 - [src/](src/): implementation, added in stages (package `technosig`).
 - [data/](data/): lightweight archive inventories (MAST and NASA Exoplanet Archive) and fetch
   scripts. No bulk data; see [.claude/rules/data.md](.claude/rules/data.md).
+- [spec/](spec/): specs written before implementation, one file per spec. [ticket/](ticket/): the
+  tickets broken out from each spec. See
+  [.claude/rules/spec-and-tickets.md](.claude/rules/spec-and-tickets.md).
 - [frontend/](frontend/): the JWST MIRI Spectra Explorer, a local Next.js viewer and control surface
   for the data scripts. It is not the science pipeline and fabricates nothing. Nested context in
   [frontend/CLAUDE.md](frontend/CLAUDE.md) (auto-loaded when working under `frontend/`); frontend
