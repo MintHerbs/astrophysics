@@ -10,7 +10,10 @@ interface Props {
 
 type SortDirection = "asc" | "desc";
 
-const PAGE_SIZES = [50, 100, 250];
+// The smallest option is below the size of the inventories the raw view shows
+// (NASA is ~41 rows, MAST ~176), so pagination visibly engages instead of every
+// option fitting the whole table on one page.
+const PAGE_SIZES = [25, 50, 100, 250];
 
 function compareValues(a: string, b: string): number {
   const aEmpty = a === undefined || a === null || a === "";
@@ -44,7 +47,7 @@ export default function CleanRawTable({ source }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<{ column: string; direction: SortDirection } | null>(null);
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(100);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     let active = true;

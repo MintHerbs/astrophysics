@@ -1,7 +1,8 @@
 /**
- * Types for the generated dataset JSON (src/data/nasa.json, src/data/mast.json).
- * The shape is produced by scripts/prepare-data.mjs from the real CSVs and is
- * the same for both sources so the UI can treat them uniformly.
+ * Types for the SourceData structure returned by the dataset API routes
+ * (/api/dataset/[source]). The server builds this live from the real CSVs and
+ * .tbl files under ../../data on every request (see src/lib/server/buildDataset.ts);
+ * the shape is the same for both sources so the UI can treat them uniformly.
  */
 
 export type SourceKey = "nasa" | "mast";

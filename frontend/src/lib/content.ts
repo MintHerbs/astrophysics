@@ -3,9 +3,10 @@
  * instructions, and plain-language descriptions for each real CSV column.
  *
  * This file holds explanatory text only. It never contains spectra, planet
- * names, wavelengths, or measured values: those come solely from the generated
- * JSON. The column names shown in the data dictionary come from the actual CSV
- * headers in the JSON; the descriptions below are matched to them by name.
+ * names, wavelengths, or measured values: those come solely from the live
+ * dataset built by the API routes from the real CSVs and .tbl files. The column
+ * names shown in the data dictionary come from the actual CSV headers in that
+ * dataset; the descriptions below are matched to them by name.
  */
 
 import type { SourceKey } from "./types";
@@ -180,14 +181,13 @@ export const CONTENT: Record<SourceKey, SourceContent> = {
     emptyState: {
       headline: "No MAST product has been downloaded yet",
       body:
-        "MAST products are large, so they are fetched per target on purpose. Download one demo " +
-        "product and build its median spectrum, then re-run the data-prep step. Run these from " +
-        "the repository root.",
+        "MAST products are large, so they are fetched per target on purpose. Use the \"Browse MAST " +
+        "observations\" panel below to download one from inside the app, or run the scripts below " +
+        "from the repository root. The app reads the result live, so the chart updates on reload.",
       steps: [
         { text: "python data/MAST/download_mast_products.py --list", code: true },
         { text: "python data/MAST/download_mast_products.py WASP-107", code: true },
         { text: "python data/MAST/plot_mast_spectrum.py", code: true },
-        { text: "cd frontend && npm run prepare-data", code: true },
       ],
     },
     tables: {

@@ -229,6 +229,13 @@ export default function RawDataGrid({ source }: Props) {
         style={{ width: "100%", height: "500px" }}
       >
         <AgGridReact
+          // The app styles the grid with the imported CSS file themes
+          // (ag-grid.css + ag-theme-quartz.css in globals.css, retinted to the
+          // Material tokens). AG Grid v33+ defaults to the new Theming API and
+          // throws error #239 when it also detects the legacy CSS. "legacy"
+          // opts this grid back into CSS-file theming so our .ag-theme-quartz
+          // overrides apply. See https://www.ag-grid.com/react-data-grid/theming/
+          theme="legacy"
           ref={gridRef}
           rowData={rowData}
           columnDefs={columnDefs}
