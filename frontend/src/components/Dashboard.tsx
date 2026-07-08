@@ -8,6 +8,7 @@ import Icon from "./Icon";
 import SourceToggle from "./SourceToggle";
 import NavTabs, { type ViewKey } from "./NavTabs";
 import ViewerView from "./ViewerView";
+import DatasetView from "./DatasetView";
 import OverviewView from "./OverviewView";
 import DictionaryView from "./DictionaryView";
 
@@ -69,6 +70,7 @@ export default function Dashboard() {
                 onDataChanged={active.reload}
               />
             ) : null}
+            {view === "dataset" ? <DatasetView dataset={active.data} content={content} /> : null}
             {view === "overview" ? <OverviewView dataset={active.data} content={content} /> : null}
             {view === "dictionary" ? <DictionaryView dataset={active.data} content={content} /> : null}
           </>

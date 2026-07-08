@@ -78,33 +78,29 @@ export const CONTENT: Record<SourceKey, SourceContent> = {
           "order by pl_name",
       },
       notes: [
-        "The inventory (planets, references, wavelength coverage) is committed and always present.",
-        "The per-point spectra live in .tbl files that the archive serves only through its Firefly interface, so they are a separate manual download.",
+        "The inventory (planets, references, wavelength coverage) is read live from data/NASA_Archive/spectra.csv.",
+        "Each row's per-point spectrum is parsed on the fly from its own .tbl file, matched by the inventory's spec_path file name.",
       ],
     },
     emptyState: {
-      headline: "The per-point spectra are not downloaded yet",
+      headline: "No local NASA archive dump found",
       body:
-        "The catalogue of published spectra is present, but the numeric data points " +
-        "come from .tbl files that must be fetched by hand from the archive, then built " +
-        "into the points CSV. Run these steps from the repository root, then re-run the " +
-        "data-prep step.",
+        "The viewer reads data/NASA_Archive/spectra.csv for the catalogue and the .tbl files it " +
+        "references (placed directly under data/NASA_Archive) for the per-point spectra. Neither " +
+        "was found.",
       steps: [
         {
           text:
-            "Open the Atmospheric Spectroscopy table and filter to Instrument contains MIRI and Type of Spectrum = Transmission (24 spectra across 9 planets): https://exoplanetarchive.ipac.caltech.edu/cgi-bin/atmospheres/nph-firefly?atmospheres",
+            "Query the Atmospheric Spectroscopy table for Instrument contains MIRI and Type of Spectrum = Transmission: https://exoplanetarchive.ipac.caltech.edu/cgi-bin/atmospheres/nph-firefly?atmospheres",
         },
         {
-          text:
-            "Check the rows, use Download All Checked Spectra (keep IPAC Table Format .tbl), and run the generated wget script inside data/NASA_Archive/raw/.",
+          text: "Save the results as data/NASA_Archive/spectra.csv, and the downloaded .tbl files directly under data/NASA_Archive/.",
         },
-        { text: "python data/NASA_Archive/build_nasa_spectra_dataset.py", code: true },
-        { text: "cd frontend && npm run prepare-data", code: true },
       ],
     },
     tables: {
-      primaryTitle: "Per-point spectra (nasa_miri_spectra_points.csv)",
-      secondaryTitle: "Spectrum inventory (nasa_miri_spectra.csv)",
+      primaryTitle: "Per-point spectra (parsed live from each .tbl file)",
+      secondaryTitle: "Spectrum inventory (spectra.csv)",
       primary: {
         source_file: "The .tbl spectrum file this point was parsed from.",
         pl_name:

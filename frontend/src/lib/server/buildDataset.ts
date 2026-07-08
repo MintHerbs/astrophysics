@@ -4,170 +4,150 @@
  * one-shot "generate JSON" build step: because the population buttons in the
  * app add or change files under ../data at any time, the API routes call this
  * on every request instead of reading a stale snapshot.
- */
-
-import type { SourceData, Spectrum, Group } from "@/lib/types";
-import { readCsv, num, int, str, basename, minMax, uniqueOrdered, type CsvRow } from "./csv";
-import { NASA_INVENTORY_CSV, NASA_POINTS_CSV, MAST_MEDIAN_CSV, MAST_INVENTORY_CSV } from "./paths";
-
-interface NasaFilePoints {
-  x: number;
-  y: number;
-  errLow: number | null;
-  errHigh: number | null;
-  depthColumn: string | null;
-}
-
-interface NasaFileIdentity {
-  planet: string | null;
-  bibcode: string | null;
-  note: string | null;
-  depthUnit: string | null;
-}
-
-/**
- * Find the uploaded points file, if any, that belongs to one inventory row.
  *
- * A real download's file name never matches the inventory's spec_path (that is
- * an archive-internal workspace path, not what "Download All Checked Spectra"
- * actually names the file), so file name is tried first but is expected to
- * miss. The reliable signal is the PL_NAME and REFERENCE keywords embedded in
- * every real per-spectrum .tbl (verified against a real download), matched
- * against this row's planet and authors. Because most planets here have more
- * than one spectrum from the very same paper (different reduction pipelines,
- * distinguished only by the inventory's note column), the embedded NOTE
- * keyword is used to disambiguate those siblings when present; ties that
- * still cannot be told apart fall back to a stable, order-based pairing so a
- * file is never silently dropped, at the cost of possibly pairing it with the
- * wrong sibling pipeline when the archive did not label it distinctly.
+ * For NASA, the inventory (spectra.csv) and every referenced .tbl file live
+ * directly under data/NASA_Archive; each spectrum's points are parsed from
+ * its own .tbl file on every request (see ./ipac), not pre-built into a CSV.
  */
-function matchNasaFile(
-  row: CsvRow,
-  specPathId: string | null,
-  planet: string,
-  pointsByFile: Map<string, NasaFilePoints[]>,
-  identityByFile: Map<string, NasaFileIdentity>,
-  claimed: Set<string>,
-): string | null {
-  if (specPathId && pointsByFile.has(specPathId) && !claimed.has(specPathId)) {
-    return specPathId;
-  }
-  const rowBibcode = str(row.reference_bibcode)?.toLowerCase() ?? null;
-  const rowNote = str(row.note)?.trim().toLowerCase() ?? null;
-  if (!rowBibcode) return null;
 
-  const candidates = [...identityByFile.entries()].filter(
-    ([file, id]) =>
-      !claimed.has(file) &&
-      id.planet?.toLowerCase() === planet.toLowerCase() &&
-      id.bibcode?.toLowerCase() === rowBibcode,
-  );
-  if (candidates.length === 0) return null;
-  if (candidates.length === 1) return candidates[0][0];
+import fs from "node:fs";
+import path from "node:path";
+import type { SourceData, Spectrum, Group, MetaRow } from "@/lib/types";
+import { readCsv, num, int, str, basename, minMax, uniqueOrdered, type CsvRow } from "./csv";
+import { extractSpectrumPoints } from "./ipac";
+import { NASA_DIR, NASA_RAW_DIR, NASA_SPECTRA_CSV, MAST_MEDIAN_CSV, MAST_INVENTORY_CSV } from "./paths";
 
-  const noteMatch = candidates.find(([, id]) => (id.note?.trim().toLowerCase() ?? null) === rowNote);
-  if (noteMatch) return noteMatch[0];
+const TBL_NAME_PATTERN = /^[A-Za-z0-9._+\-]+\.tbl$/i;
 
-  // Ambiguous: multiple unclaimed files share this planet and paper, and none
-  // carries a NOTE that matches this row's pipeline label. Pair deterministically
-  // rather than dropping the file.
-  return candidates[0][0];
+/** Locate a spectrum's .tbl file by exact basename, directly under NASA_DIR or its legacy raw/ upload folder. */
+function resolveNasaTblPath(name: string): string | null {
+  if (!TBL_NAME_PATTERN.test(name)) return null;
+  const direct = path.join(NASA_DIR, name);
+  if (fs.existsSync(direct)) return direct;
+  const uploaded = path.join(NASA_RAW_DIR, name);
+  if (fs.existsSync(uploaded)) return uploaded;
+  return null;
 }
+
+const NASA_SECONDARY_COLUMNS = [
+  "pl_name",
+  "instrument",
+  "spec_type",
+  "facility",
+  "wavelength_min_um",
+  "wavelength_max_um",
+  "transit_mid_min_bjd",
+  "transit_mid_max_bjd",
+  "num_datapoints",
+  "reference_bibcode",
+  "authors",
+  "note",
+  "spec_path",
+];
+
+const NASA_PRIMARY_COLUMNS = [
+  "source_file",
+  "pl_name",
+  "reference_bibcode",
+  "note",
+  "wavelength_um",
+  "depth",
+  "depth_err_low",
+  "depth_err_high",
+  "depth_column",
+  "wavelength_column",
+  "depth_unit",
+  "wavelength_unit",
+];
 
 export function buildNasa(): SourceData {
-  const inventory = readCsv(NASA_INVENTORY_CSV);
-  const pointsTable = readCsv(NASA_POINTS_CSV);
+  const catalog = readCsv(NASA_SPECTRA_CSV);
+  const records = catalog ? catalog.records : [];
 
-  const invHeader = inventory ? inventory.header : [];
-  const invRecords = inventory ? inventory.records : [];
-  const pointsHeader = pointsTable ? pointsTable.header : [];
-  const pointsRecords = pointsTable ? pointsTable.records : [];
+  const spectra: Spectrum[] = records.map((r, i) => {
+    const planet = str(r.PL_NAME) || "Unknown";
+    const fileName = basename(str(r.SPEC_PATH));
+    const bibcode = str(r.BIBCODE);
+    const note = str(r.NOTE);
+    const authors = str(r.AUTHORS);
+    const id = fileName || `${planet}-row-${i}`;
 
-  const pointsByFile = new Map<string, NasaFilePoints[]>();
-  const identityByFile = new Map<string, NasaFileIdentity>();
-  for (const r of pointsRecords) {
-    const key = str(r.source_file);
-    if (!key) continue;
-    if (!pointsByFile.has(key)) pointsByFile.set(key, []);
-    if (!identityByFile.has(key)) {
-      identityByFile.set(key, {
-        planet: str(r.pl_name),
-        bibcode: str(r.reference_bibcode),
-        note: str(r.note),
-        depthUnit: str(r.depth_unit),
-      });
+    let points: Spectrum["points"] = [];
+    let depthColumn = "depth";
+    let depthUnit: string | null = null;
+    let statusNote: string | null = null;
+
+    if (!fileName) {
+      statusNote = "This inventory row has no spec_path, so no local file can be matched.";
+    } else {
+      const filePath = resolveNasaTblPath(fileName);
+      if (!filePath) {
+        statusNote = `The local file ${fileName} was not found under data/NASA_Archive.`;
+      } else {
+        try {
+          const text = fs.readFileSync(filePath, "utf8");
+          const parsed = extractSpectrumPoints(text);
+          points = parsed.points.map((p) => ({ x: p.wavelength_um, y: p.depth, errLow: p.errLow, errHigh: p.errHigh }));
+          depthColumn = parsed.depthColumn ?? "depth";
+          depthUnit = parsed.depthUnit;
+          if (points.length === 0) {
+            statusNote = `${fileName} was read but no wavelength/depth columns could be identified.`;
+          }
+        } catch (err) {
+          statusNote = `${fileName} could not be read (${err instanceof Error ? err.message : String(err)}).`;
+        }
+      }
     }
-    const wl = num(r.wavelength_um);
-    const depth = num(r.depth);
-    if (wl === null || depth === null) continue;
-    pointsByFile.get(key)!.push({
-      x: wl,
-      y: depth,
-      errLow: num(r.depth_err_low),
-      errHigh: num(r.depth_err_high),
-      depthColumn: str(r.depth_column),
-    });
-  }
-  for (const arr of pointsByFile.values()) arr.sort((a, b) => a.x - b.x);
 
-  const claimedFiles = new Set<string>();
-  const spectra: Spectrum[] = invRecords.map((r: CsvRow) => {
-    const specPathId = basename(r.spec_path);
-    const planet = str(r.pl_name) || "Unknown";
-    const fileKey = matchNasaFile(r, specPathId, planet, pointsByFile, identityByFile, claimedFiles);
-    if (fileKey) claimedFiles.add(fileKey);
-    const id = specPathId || fileKey || planet;
-    const filePoints = fileKey ? pointsByFile.get(fileKey) || [] : [];
-    const identity = fileKey ? identityByFile.get(fileKey) : undefined;
     const [wmin, wmax] =
-      filePoints.length > 0 ? minMax(filePoints.map((p) => p.x)) : [num(r.wavelength_min_um), num(r.wavelength_max_um)];
-    const note = str(r.note);
-    const authors = str(r.authors);
+      points.length > 0 ? minMax(points.map((p) => p.x)) : [num(r.MINWAVELNG), num(r.MAXWAVELNG)];
+
     let label = planet;
     if (note) label = `${planet} - ${note}`;
     else if (authors) label = `${planet} - ${authors}`;
+
+    const meta: MetaRow[] = [
+      { label: "Instrument", value: str(r.INSTRUMENT) },
+      { label: "Spectrum type", value: str(r.SPEC_TYPE) },
+      { label: "Facility", value: str(r.FACILITY) },
+      { label: "Published data points", value: int(r.NUM_DATAPOINTS) },
+    ].filter((m) => m.value !== null);
+    if (statusNote) meta.push({ label: "Local file status", value: statusNote });
+
     return {
       id,
       label,
       group: planet,
-      instrument: str(r.instrument),
-      reference_bibcode: str(r.reference_bibcode),
-      reference_url: str(r.reference_url),
+      instrument: str(r.INSTRUMENT),
+      reference_bibcode: bibcode,
+      reference_url: bibcode ? `https://ui.adsabs.harvard.edu/abs/${bibcode}/abstract` : null,
       authors,
       note,
       wavelength_min_um: wmin,
       wavelength_max_um: wmax,
-      yColumn: filePoints.length > 0 && filePoints[0].depthColumn ? filePoints[0].depthColumn! : "depth",
-      yUnit: identity?.depthUnit ?? null,
-      publishedPointCount: int(r.num_datapoints),
-      pointCount: filePoints.length,
-      hasErrors: filePoints.some((p) => p.errLow !== null && Number.isFinite(p.errLow)),
-      points: filePoints.map((p) => ({ x: p.x, y: p.y, errLow: p.errLow, errHigh: p.errHigh })),
-      meta: [
-        { label: "Instrument", value: str(r.instrument) },
-        { label: "Spectrum type", value: str(r.spec_type) },
-        { label: "Facility", value: str(r.facility) },
-        { label: "Published data points", value: int(r.num_datapoints) },
-      ].filter((m) => m.value !== null),
+      yColumn: depthColumn,
+      yUnit: depthUnit,
+      publishedPointCount: int(r.NUM_DATAPOINTS),
+      pointCount: points.length,
+      hasErrors: points.some((p) => p.errLow !== null && Number.isFinite(p.errLow)),
+      points,
+      meta,
     };
   });
 
-  const planetNames = uniqueOrdered(invRecords.map((r) => str(r.pl_name)));
+  const planetNames = uniqueOrdered(records.map((r) => str(r.PL_NAME)));
   const groups: Group[] = planetNames.map((name) => {
-    const rows = invRecords.filter((r) => str(r.pl_name) === name);
+    const rows = records.filter((r) => str(r.PL_NAME) === name);
     const spec = spectra.filter((s) => s.group === name);
-    const [wmin, wmax] = minMax([
-      ...rows.map((r) => num(r.wavelength_min_um)),
-      ...rows.map((r) => num(r.wavelength_max_um)),
-    ]);
+    const [wmin, wmax] = minMax([...rows.map((r) => num(r.MINWAVELNG)), ...rows.map((r) => num(r.MAXWAVELNG))]);
     return {
       name,
       spectrumCount: rows.length,
-      references: uniqueOrdered(rows.map((r) => str(r.reference_bibcode))),
+      references: uniqueOrdered(rows.map((r) => str(r.BIBCODE))),
       wavelength_min_um: wmin,
       wavelength_max_um: wmax,
       points: spec.reduce((acc, s) => acc + s.pointCount, 0),
-      publishedPoints: rows.reduce((acc, r) => acc + (int(r.num_datapoints) || 0), 0),
+      publishedPoints: rows.reduce((acc, r) => acc + (int(r.NUM_DATAPOINTS) || 0), 0),
     };
   });
 
@@ -178,7 +158,7 @@ export function buildNasa(): SourceData {
     source: "nasa",
     present: spectra.length > 0,
     plottable: pointsLoaded > 0,
-    columns: { primary: pointsHeader, secondary: invHeader },
+    columns: { primary: NASA_PRIMARY_COLUMNS, secondary: NASA_SECONDARY_COLUMNS },
     counts: {
       spectra: spectra.length,
       groups: groups.length,

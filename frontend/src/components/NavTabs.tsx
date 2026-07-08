@@ -2,7 +2,7 @@
 
 import Icon from "./Icon";
 
-export type ViewKey = "viewer" | "overview" | "dictionary";
+export type ViewKey = "viewer" | "dataset" | "overview" | "dictionary";
 
 interface Props {
   view: ViewKey;
@@ -11,6 +11,7 @@ interface Props {
 
 const TABS: { key: ViewKey; label: string; icon: string }[] = [
   { key: "viewer", label: "Spectrograph", icon: "monitoring" },
+  { key: "dataset", label: "Dataset", icon: "grid_on" },
   { key: "overview", label: "Dataset overview", icon: "dataset" },
   { key: "dictionary", label: "Data dictionary", icon: "table_chart" },
 ];

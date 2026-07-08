@@ -8,6 +8,8 @@ import Icon from "./Icon";
 interface Props {
   spectra: Spectrum[];
   defaultOpen: boolean;
+  selectedId?: string;
+  onSelect?: (id: string) => void;
 }
 
 /**
@@ -25,7 +27,7 @@ function planetArchiveUrl(planet: string): string {
   return `https://exoplanetarchive.ipac.caltech.edu/cgi-bin/atmospheres/nph-firefly?atmospheres&planet='${encoded}'`;
 }
 
-export default function NasaCatalogPicker({ spectra, defaultOpen }: Props) {
+export default function NasaCatalogPicker({ spectra, defaultOpen, selectedId, onSelect }: Props) {
   const [open, setOpen] = useState(defaultOpen);
   const [search, setSearch] = useState("");
 
@@ -50,13 +52,6 @@ export default function NasaCatalogPicker({ spectra, defaultOpen }: Props) {
 
       {open ? (
         <div className="stack" style={{ marginTop: 16 }}>
-          <p className="type-body muted" style={{ margin: 0 }}>
-            Search the catalogued spectra below, then use &quot;Open in archive&quot; to jump straight
-            to that planet&apos;s page on the NASA Exoplanet Archive, pre-filtered to its atmospheric
-            spectra. From there, check the row(s) you want and use &quot;Download All Checked
-            Spectra&quot; (IPAC Table Format, .tbl), then drop the file(s) into the panel below.
-          </p>
-
           <div className="row catalog-controls">
             <div className="select" style={{ flex: "1 1 260px" }}>
               <input
@@ -92,45 +87,75 @@ export default function NasaCatalogPicker({ spectra, defaultOpen }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((s) => (
-                  <tr key={s.id}>
-                    <td>{s.group}</td>
-                    <td className="muted">{s.note || "-"}</td>
-                    <td>{fmtRange(s.wavelength_min_um, s.wavelength_max_um)}</td>
-                    <td>{fmtInt(s.pointCount)}</td>
-                    <td>
-                      {s.reference_bibcode ? (
-                        <a href={s.reference_url ?? undefined} target="_blank" rel="noreferrer">
-                          {s.reference_bibcode}
-                        </a>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                    <td>
-                      {s.pointCount > 0 ? (
-                        <span className="chip transmission">
-                          <Icon name="check_circle" />
-                          Downloaded
-                        </span>
-                      ) : (
-                        <a
-                          className="segmented-btn"
-                          style={{
-                            border: "1px solid var(--md-sys-color-outline)",
-                            borderRadius: "var(--md-shape-full)",
-                          }}
-                          href={planetArchiveUrl(s.group)}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <Icon name="open_in_new" />
-                          Open in archive
-                        </a>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {rows.map((s) => {
+                  const isSelected = s.id === selectedId;
+                  const isPlottable = s.pointCount > 0 && !!onSelect;
+                  return (
+                    <tr
+                      key={s.id}
+                      aria-selected={isSelected}
+                      onClick={isPlottable ? () => onSelect!(s.id) : undefined}
+                      style={{
+                        cursor: isPlottable ? "pointer" : undefined,
+                        backgroundColor: isSelected ? "var(--md-sys-color-surface-container-highest)" : undefined,
+                      }}
+                    >
+                      <td>{s.group}</td>
+                      <td className="muted">{s.note || "-"}</td>
+                      <td>{fmtRange(s.wavelength_min_um, s.wavelength_max_um)}</td>
+                      <td>{fmtInt(s.pointCount)}</td>
+                      <td>
+                        {s.reference_bibcode ? (
+                          <a
+                            href={s.reference_url ?? undefined}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {s.reference_bibcode}
+                          </a>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                      <td>
+                        {s.pointCount > 0 ? (
+                          <button
+                            type="button"
+                            className="segmented-btn"
+                            style={{
+                              border: "1px solid var(--md-sys-color-outline)",
+                              borderRadius: "var(--md-shape-full)",
+                            }}
+                            aria-pressed={isSelected}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelect?.(s.id);
+                            }}
+                          >
+                            <Icon name={isSelected ? "check_circle" : "show_chart"} />
+                            {isSelected ? "Plotted" : "Plot"}
+                          </button>
+                        ) : (
+                          <a
+                            className="segmented-btn"
+                            style={{
+                              border: "1px solid var(--md-sys-color-outline)",
+                              borderRadius: "var(--md-shape-full)",
+                            }}
+                            href={planetArchiveUrl(s.group)}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Icon name="open_in_new" />
+                            Open in archive
+                          </a>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
                 {rows.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="muted" style={{ textAlign: "center" }}>
