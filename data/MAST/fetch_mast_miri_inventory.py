@@ -96,6 +96,16 @@ BACKGROUND_CAL_MARKERS = (
     "target acquisition",
 )
 
+# Target-name suffixes MAST uses for a reference/background pointing paired with
+# a science target (for example "HAT-P-1-BG", "KELT-8-BKG") and for absolute-flux
+# calibration standards (for example "HD2811-BKG"). MAST's own
+# target_classification field labels these as ordinary stars or exoplanet hosts,
+# not "Calibration; ...", so BACKGROUND_CAL_MARKERS alone does not catch them;
+# the target name is the only reliable marker. Verified against the live MAST
+# CAOM inventory: every "-BG"/"-BKG" target name found was either a background
+# pointing for an exoplanet program or a named flux-calibration standard star.
+BACKGROUND_TARGET_NAME_SUFFIXES = ("-BG", "-BKG")
+
 OUTPUT_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           "mast_miri_inventory.csv")
 
@@ -149,10 +159,17 @@ def nm_to_um(nm):
         return ""
 
 
-def is_background_or_calibration(classification):
-    """True if the archive classification marks a background/calibration field."""
+def is_background_or_calibration(classification, target_name=None):
+    """True if the archive classification marks a background/calibration field,
+    or the target name itself marks a reference pointing or flux standard."""
     text = str(classification).lower()
-    return any(marker in text for marker in BACKGROUND_CAL_MARKERS)
+    if any(marker in text for marker in BACKGROUND_CAL_MARKERS):
+        return True
+    if target_name is not None:
+        name = str(target_name).strip().upper()
+        if name.endswith(BACKGROUND_TARGET_NAME_SUFFIXES):
+            return True
+    return False
 
 
 def product_download_url(data_uri):
@@ -225,8 +242,10 @@ def build_inventory(df):
     out = pd.DataFrame({
         "target_name": df.get("target_name"),
         "target_classification": df.get("target_classification"),
-        "is_background_or_calibration": df.get("target_classification").map(
-            is_background_or_calibration),
+        "is_background_or_calibration": [
+            is_background_or_calibration(cls, name)
+            for cls, name in zip(df.get("target_classification"), df.get("target_name"))
+        ],
         "instrument_name": df.get("instrument_name"),
         "observation_mode": df.get("instrument_name").map(
             lambda v: MODE_LABEL.get(str(v), str(v))),

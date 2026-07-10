@@ -25,6 +25,7 @@ Load only the chunk relevant to the task.
 | [06-references.md](06-references.md) | The full reference list with reachable links where known | You need the source behind a claim or a tool |
 | [07-roadmap.md](07-roadmap.md) | The task list, grouped by pipeline stage and objective, with status | Planning, prioritising, or picking up the next task |
 | [08-review-and-gaps.md](08-review-and-gaps.md) | The internal review: fact-check, defect register, and corrections since submission | You need the evidence behind a correction, or to rerun the review |
+| [09-tooling-setup.md](09-tooling-setup.md) | Installing and indexing jCodemunch and jDocmunch MCP | Starting a fresh session or setting up a new machine |
 
 ## Reading order for a newcomer
 

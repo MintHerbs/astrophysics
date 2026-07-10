@@ -3,6 +3,11 @@
 import { useMemo, useState } from "react";
 import type { Spectrum } from "@/lib/types";
 import { fmtInt, fmtRange } from "@/lib/format";
+import {
+  POINTS_FILTER_OPTIONS,
+  matchesPointsFilter,
+  type PointsFilter,
+} from "@/lib/pointsFilter";
 import Icon from "./Icon";
 
 interface Props {
@@ -10,6 +15,14 @@ interface Props {
   defaultOpen: boolean;
   selectedId?: string;
   onSelect?: (id: string) => void;
+  /** Ids whose points have been fetched on demand this session. */
+  loadedIds?: ReadonlySet<string>;
+  /** Id currently being fetched, if any. */
+  loadingId?: string | null;
+  /** Per-id fetch error messages. */
+  errorById?: Record<string, string>;
+  /** Fetch a catalogued spectrum's points from the archive on demand. */
+  onLoad?: (id: string) => void;
 }
 
 /**
@@ -27,16 +40,29 @@ function planetArchiveUrl(planet: string): string {
   return `https://exoplanetarchive.ipac.caltech.edu/cgi-bin/atmospheres/nph-firefly?atmospheres&planet='${encoded}'`;
 }
 
-export default function NasaCatalogPicker({ spectra, defaultOpen, selectedId, onSelect }: Props) {
+export default function NasaCatalogPicker({
+  spectra,
+  defaultOpen,
+  selectedId,
+  onSelect,
+  loadedIds,
+  loadingId,
+  errorById,
+  onLoad,
+}: Props) {
   const [open, setOpen] = useState(defaultOpen);
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<PointsFilter>("all");
+
+  const hasAnyPoints = (s: Spectrum) => s.pointCount > 0 || (loadedIds?.has(s.id) ?? false);
 
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
     return spectra
+      .filter((s) => matchesPointsFilter(s, filter, loadedIds))
       .filter((s) => !q || s.group.toLowerCase().includes(q) || (s.note ?? "").toLowerCase().includes(q))
       .sort((a, b) => a.group.localeCompare(b.group) || (a.note ?? "").localeCompare(b.note ?? ""));
-  }, [spectra, search]);
+  }, [spectra, search, filter, loadedIds]);
 
   return (
     <div className="card">
@@ -52,7 +78,7 @@ export default function NasaCatalogPicker({ spectra, defaultOpen, selectedId, on
 
       {open ? (
         <div className="stack" style={{ marginTop: 16 }}>
-          <div className="row catalog-controls">
+          <div className="row catalog-controls" style={{ flexWrap: "wrap", gap: 12 }}>
             <div className="select" style={{ flex: "1 1 260px" }}>
               <input
                 type="search"
@@ -71,7 +97,21 @@ export default function NasaCatalogPicker({ spectra, defaultOpen, selectedId, on
                 }}
               />
             </div>
-            <span className="type-label muted">{rows.length} catalogued spectra</span>
+            <div className="segmented" role="group" aria-label="Filter by points availability">
+              {POINTS_FILTER_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  className="segmented-btn"
+                  aria-pressed={filter === opt.value}
+                  onClick={() => setFilter(opt.value)}
+                >
+                  <Icon name={opt.icon} />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <span className="type-label muted">{rows.length} spectra</span>
           </div>
 
           <div className="table-wrap" style={{ maxHeight: 420, overflowY: "auto" }}>
@@ -89,7 +129,10 @@ export default function NasaCatalogPicker({ spectra, defaultOpen, selectedId, on
               <tbody>
                 {rows.map((s) => {
                   const isSelected = s.id === selectedId;
-                  const isPlottable = s.pointCount > 0 && !!onSelect;
+                  const pointsHere = hasAnyPoints(s);
+                  const isPlottable = pointsHere && !!onSelect;
+                  const isLoading = loadingId === s.id;
+                  const rowError = errorById?.[s.id];
                   return (
                     <tr
                       key={s.id}
@@ -103,7 +146,15 @@ export default function NasaCatalogPicker({ spectra, defaultOpen, selectedId, on
                       <td>{s.group}</td>
                       <td className="muted">{s.note || "-"}</td>
                       <td>{fmtRange(s.wavelength_min_um, s.wavelength_max_um)}</td>
-                      <td>{fmtInt(s.pointCount)}</td>
+                      <td>
+                        {pointsHere ? (
+                          fmtInt(s.pointCount > 0 ? s.pointCount : (s.publishedPointCount ?? 0))
+                        ) : (
+                          <span className="muted">
+                            {s.publishedPointCount ? `${fmtInt(s.publishedPointCount)} in archive` : "-"}
+                          </span>
+                        )}
+                      </td>
                       <td>
                         {s.reference_bibcode ? (
                           <a
@@ -119,7 +170,7 @@ export default function NasaCatalogPicker({ spectra, defaultOpen, selectedId, on
                         )}
                       </td>
                       <td>
-                        {s.pointCount > 0 ? (
+                        {pointsHere ? (
                           <button
                             type="button"
                             className="segmented-btn"
@@ -135,6 +186,28 @@ export default function NasaCatalogPicker({ spectra, defaultOpen, selectedId, on
                           >
                             <Icon name={isSelected ? "check_circle" : "show_chart"} />
                             {isSelected ? "Plotted" : "Plot"}
+                          </button>
+                        ) : onLoad ? (
+                          <button
+                            type="button"
+                            className="segmented-btn"
+                            style={{
+                              border: "1px solid var(--md-sys-color-outline)",
+                              borderRadius: "var(--md-shape-full)",
+                            }}
+                            disabled={isLoading}
+                            title={rowError || undefined}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onLoad(s.id);
+                            }}
+                          >
+                            {isLoading ? (
+                              <span className="spinner" style={{ width: 16, height: 16 }} />
+                            ) : (
+                              <Icon name={rowError ? "error" : "download"} />
+                            )}
+                            {isLoading ? "Loading" : rowError ? "Retry" : "Load points"}
                           </button>
                         ) : (
                           <a
