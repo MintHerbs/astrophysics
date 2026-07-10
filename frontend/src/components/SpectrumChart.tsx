@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   CartesianGrid,
   ComposedChart,
@@ -17,6 +17,7 @@ import {
 import type { Spectrum } from "@/lib/types";
 import { SCIENCE_BANDS } from "@/lib/science";
 import { fmtNumber } from "@/lib/format";
+import Icon from "./Icon";
 
 interface Props {
   spectrum: Spectrum;
@@ -24,6 +25,18 @@ interface Props {
   quantity: string;
   axisLabel: string;
 }
+
+/** How the series is drawn. Points is the default for measured spectra. */
+type ChartType = "points" | "line" | "smooth";
+
+const CHART_TYPE_OPTIONS: Array<{ value: ChartType; label: string; icon: string }> = [
+  { value: "points", label: "Points", icon: "scatter_plot" },
+  { value: "line", label: "Line", icon: "show_chart" },
+  { value: "smooth", label: "Smooth", icon: "timeline" },
+];
+
+/** Above this many points, markers on a line are dropped to keep it readable. */
+const DOT_LIMIT = 300;
 
 interface Datum {
   x: number;
@@ -44,6 +57,11 @@ const WINDOW_COLOR = "var(--md-sys-color-tertiary)";
 const OZONE_COLOR = "var(--md-sys-color-error)";
 
 export default function SpectrumChart({ spectrum, isTransmission, quantity, axisLabel }: Props) {
+  // Default to points for measured transmission spectra (error bars matter),
+  // and to a smooth line for the MAST flux demo, matching the prior behaviour.
+  const [chartType, setChartType] = useState<ChartType>(isTransmission ? "points" : "smooth");
+  const [showErrorBars, setShowErrorBars] = useState(true);
+
   const data: Datum[] = useMemo(
     () =>
       spectrum.points.map((p) => {
@@ -93,8 +111,43 @@ export default function SpectrumChart({ spectrum, isTransmission, quantity, axis
   const showOzone =
     !!ozone && ozone.kind === "line" && ozone.center_um > xDomain[0] && ozone.center_um < xDomain[1];
 
+  const errorBarsOn = showErrorBars && spectrum.hasErrors;
+  const showDots = data.length <= DOT_LIMIT;
+  const lineType = chartType === "smooth" ? "monotone" : "linear";
+
   return (
     <div>
+      <div
+        className="row"
+        style={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 12 }}
+      >
+        <label
+          className="type-label"
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, cursor: spectrum.hasErrors ? "pointer" : "not-allowed", opacity: spectrum.hasErrors ? 1 : 0.5 }}
+        >
+          <input
+            type="checkbox"
+            checked={errorBarsOn}
+            disabled={!spectrum.hasErrors}
+            onChange={(e) => setShowErrorBars(e.target.checked)}
+          />
+          Error bars
+        </label>
+        <div className="segmented" role="group" aria-label="Chart type">
+          {CHART_TYPE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              className="segmented-btn"
+              aria-pressed={chartType === opt.value}
+              onClick={() => setChartType(opt.value)}
+            >
+              <Icon name={opt.icon} />
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="chart-shell">
         <ResponsiveContainer width="100%" height={440}>
           <ComposedChart data={data} margin={{ top: 16, right: 24, bottom: 40, left: 24 }}>
@@ -159,7 +212,7 @@ export default function SpectrumChart({ spectrum, isTransmission, quantity, axis
               content={<SpectrumTooltip quantity={quantity} />}
               cursor={{ stroke: "var(--md-sys-color-outline)", strokeDasharray: "4 4" }}
             />
-            {isTransmission ? (
+            {chartType === "points" ? (
               <Scatter
                 data={data}
                 dataKey="y"
@@ -167,7 +220,7 @@ export default function SpectrumChart({ spectrum, isTransmission, quantity, axis
                 line={false}
                 isAnimationActive={false}
               >
-                {spectrum.hasErrors ? (
+                {errorBarsOn ? (
                   <ErrorBar
                     dataKey="errY"
                     direction="y"
@@ -179,13 +232,23 @@ export default function SpectrumChart({ spectrum, isTransmission, quantity, axis
               </Scatter>
             ) : (
               <Line
-                type="monotone"
+                type={lineType}
                 dataKey="y"
                 stroke={SERIES_COLOR}
                 strokeWidth={2}
-                dot={false}
+                dot={showDots ? { r: 2, fill: SERIES_COLOR, stroke: SERIES_COLOR } : false}
                 isAnimationActive={false}
-              />
+              >
+                {errorBarsOn ? (
+                  <ErrorBar
+                    dataKey="errY"
+                    direction="y"
+                    width={4}
+                    strokeWidth={1.2}
+                    stroke={SERIES_COLOR}
+                  />
+                ) : null}
+              </Line>
             )}
           </ComposedChart>
         </ResponsiveContainer>
@@ -193,11 +256,11 @@ export default function SpectrumChart({ spectrum, isTransmission, quantity, axis
       <div className="chart-legend" aria-hidden="true">
         <span className="legend-item">
           <span
-            className={`legend-swatch${isTransmission ? "" : " line"}`}
+            className={`legend-swatch${chartType === "points" ? "" : " line"}`}
             style={{ backgroundColor: SERIES_COLOR }}
           />
           {quantity}
-          {isTransmission && spectrum.hasErrors ? " (points with 1-sigma error bars)" : ""}
+          {errorBarsOn ? " (with 1-sigma error bars)" : ""}
         </span>
         {showWindow ? (
           <span className="legend-item">
