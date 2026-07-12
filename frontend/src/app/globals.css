@@ -790,3 +790,159 @@ code.inline {
   background-color: color-mix(in srgb, var(--md-sys-color-primary-container) 20%, transparent) !important;
   color: var(--md-sys-color-on-surface) !important;
 }
+
+/* ----------------------------- Coverage map ------------------------------ */
+
+/* The app-bar brand and the coverage icon button are links, so suppress the
+   global anchor underline and give the coverage button an active state. */
+.app-bar-brand {
+  text-decoration: none;
+  color: inherit;
+}
+.app-bar-brand:hover {
+  text-decoration: none;
+  opacity: 0.92;
+}
+.btn-icon {
+  text-decoration: none;
+}
+.btn-icon.active {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.coverage-header {
+  margin: 24px 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.coverage-plot {
+  position: relative;
+  width: 100%;
+}
+.coverage-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.coverage-svg text {
+  font-family: var(--font-sans);
+}
+.coverage-plot-placeholder {
+  width: 100%;
+  height: 600px;
+}
+
+.coverage-hit {
+  fill: transparent;
+  cursor: pointer;
+  outline: none;
+}
+.coverage-hit:hover {
+  fill: var(--md-sys-color-on-surface);
+  fill-opacity: 0.04;
+}
+.coverage-hit:focus-visible {
+  stroke: var(--md-sys-color-primary);
+  stroke-width: 2;
+}
+
+.coverage-row-visual {
+  transition: opacity 120ms ease;
+}
+
+.coverage-row-name {
+  font-size: 13.5px;
+  font-weight: 500;
+  fill: var(--md-sys-color-on-surface);
+}
+.coverage-note {
+  font-size: 12px;
+  fill: var(--md-sys-color-on-surface-variant);
+}
+.coverage-section-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  fill: var(--md-sys-color-on-surface-variant);
+}
+.coverage-region-label {
+  font-size: 11.5px;
+  fill: var(--md-sys-color-on-surface-variant);
+  opacity: 0.85;
+}
+.coverage-tick-label {
+  font-size: 12px;
+  fill: var(--md-sys-color-on-surface-variant);
+}
+.coverage-axis-line {
+  stroke: var(--md-sys-color-outline-variant);
+  stroke-width: 1;
+}
+.coverage-gridline {
+  stroke: var(--md-sys-color-outline-variant);
+  stroke-width: 1;
+  opacity: 0.6;
+}
+.coverage-window-edge {
+  stroke: var(--md-sys-color-on-surface-variant);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.6;
+}
+.coverage-window-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  fill: var(--md-sys-color-on-surface-variant);
+}
+
+.coverage-readout {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--md-shape-md);
+  background-color: var(--md-sys-color-surface-container-high);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+.coverage-readout .material-symbols-rounded {
+  flex: none;
+  font-size: 20px;
+  margin-top: 1px;
+  color: var(--md-sys-color-primary);
+}
+.coverage-readout span {
+  line-height: 1.5;
+}
+
+.coverage-tooltip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 10px));
+  pointer-events: none;
+  max-width: 240px;
+  z-index: 5;
+  white-space: normal;
+}
+.coverage-tooltip-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.coverage-legend-hatch {
+  background-color: var(--md-sys-color-surface-container-high);
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--md-sys-color-outline) 0,
+    var(--md-sys-color-outline) 1.4px,
+    transparent 1.4px,
+    transparent 4px
+  );
+  border: 1px solid var(--md-sys-color-outline);
+}
+.coverage-legend-window {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, transparent);
+  border: 1px dashed var(--md-sys-color-on-surface-variant);
+}
