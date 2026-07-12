@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readCsv } from "@/lib/server/csv";
-import { NASA_INVENTORY_CSV, MAST_INVENTORY_CSV } from "@/lib/server/paths";
+import { NASA_SPECTRA_CSV, MAST_INVENTORY_CSV } from "@/lib/server/paths";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -8,7 +8,9 @@ export async function GET(request: NextRequest) {
 
   let filePath = "";
   if (source === "nasa") {
-    filePath = NASA_INVENTORY_CSV;
+    // The same catalogue the viewer reads (buildNasa), so every NASA view is
+    // consistent. This is a raw read of the archive-export CSV as-is.
+    filePath = NASA_SPECTRA_CSV;
   } else if (source === "mast") {
     filePath = MAST_INVENTORY_CSV;
   } else {

@@ -10,6 +10,13 @@ paths:
 > Applies to work under `frontend/`. Orientation and stack detail:
 > [frontend/GEMINI.md](../../frontend/GEMINI.md) and [frontend/README.md](../../frontend/README.md).
 > These are the hard rules; the root context in [GEMINI.md](../../GEMINI.md) still applies in full.
+>
+> **Before implementing any frontend ticket or code change, move into `frontend/` and read its own
+> context first:** [frontend/GEMINI.md](../../frontend/GEMINI.md),
+> [frontend/.claude/](../../frontend/.claude/) (frontend-scoped design and engineering rules, which
+> are agent-neutral in content), and [frontend/docs/](../../frontend/docs/) (the full documentation
+> set, including the design system and the API reference). This file is the repo-root summary; the
+> depth lives under `frontend/`.
 
 The frontend is a viewer and a local launcher for the data-pipeline scripts under
 [data/](../../data). It does not run the science pipeline, compute a posterior, or produce an upper

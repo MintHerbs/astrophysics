@@ -178,3 +178,8 @@ Invoke each with a slash command:
   [frontend/CLAUDE.md](frontend/CLAUDE.md) (auto-loaded when working under `frontend/`); frontend
   rules in [.claude/rules/frontend.md](.claude/rules/frontend.md); full description in
   [frontend/README.md](frontend/README.md).
+  **When implementing a ticket or code change that deals with the frontend, move into `frontend/`
+  first and read its own context there before starting: [frontend/CLAUDE.md](frontend/CLAUDE.md),
+  [frontend/.claude/](frontend/.claude/) (the frontend-scoped design and engineering rules), and
+  [frontend/docs/](frontend/docs/) (the full documentation set). Do not work on the frontend from the
+  repository root alone.**

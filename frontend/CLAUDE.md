@@ -3,8 +3,14 @@
 Context for work under `frontend/`. This loads in addition to the root [CLAUDE.md](../CLAUDE.md);
 everything there still applies (attribution, human in the loop, data hygiene, never fabricate a
 number or a data row). This file adds what is specific to the web app. The full user-facing
-description is in [README.md](README.md); the enforceable frontend rules are in
-[../.claude/rules/frontend.md](../.claude/rules/frontend.md).
+description is in [README.md](README.md); the working documentation set is in [docs/](docs/) (start
+at [docs/README.md](docs/README.md)); the enforceable frontend rules are in [.claude/](.claude/)
+(frontend-scoped) and in [../.claude/rules/frontend.md](../.claude/rules/frontend.md) (repo root).
+
+When implementing a ticket or code change under `frontend/`, read [.claude/README.md](.claude/README.md)
+and the relevant [docs/](docs/) file first: [docs/design-system.md](docs/design-system.md) before any
+styling change, [docs/api-and-server-reference.md](docs/api-and-server-reference.md) before any route
+change.
 
 ## What this is (and is not)
 
@@ -30,6 +36,9 @@ network exposure without authentication, and do not weaken the input validation 
   that way.
 - Recharts for the spectrograph, chosen for native error-bar support (the NASA transit-depth
   uncertainties).
+- AG Grid (`ag-grid-community`, `ag-grid-react`) for the interactive spreadsheet view of the raw
+  inventory, restyled through CSS variables to the Material palette. Keep grid styling in the
+  `.ag-theme-quartz` block in `globals.css`; do not import AG Grid's stock themes.
 
 ## Commands (run from `frontend/`)
 
@@ -49,12 +58,15 @@ require (astroquery, astropy, pandas, matplotlib).
 ## Layout
 
 - `src/app/` App Router: `layout.tsx`, `page.tsx`, `globals.css`, and `api/` route handlers (live
-  dataset reads, NASA upload, MAST catalog, dry-run, download, and job polling).
-- `src/components/` client UI (source toggle, tabs, chart, the three views, population panels).
-- `src/lib/` shared client code (theme, types, content, science bands, formatting, the `useDataset`
-  hook).
-- `src/lib/server/` Node-only code: CSV parsing, dataset building, path constants, the job runner.
-  Do not import these from a client component.
+  built-dataset reads, raw inventory reads, NASA upload, MAST catalog, dry-run, download, and job
+  polling).
+- `src/components/` client UI (source toggle, tabs, chart, the four views, population panels). The
+  four views are Spectrograph, Dataset (a raw read of the inventory CSV with a clean-table and an AG
+  Grid spreadsheet mode), Dataset overview, and Data dictionary.
+- `src/lib/` shared client code (theme, types, content, science bands, formatting, raw-column
+  highlights, the `useDataset`/`pollJob` hooks).
+- `src/lib/server/` Node-only code: CSV parsing, the IPAC `.tbl` parser, dataset building, path
+  constants, the job runner. Do not import these from a client component.
 - The `@/*` path alias maps to `src/*` (see [tsconfig.json](tsconfig.json)).
 
 ## Conventions specific to the frontend

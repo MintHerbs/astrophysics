@@ -43,6 +43,9 @@ The app makes this distinction obvious so a MAST demo is never mistaken for a re
 - **Recharts** for the spectrograph, chosen because it supports **error bars** natively (used for
   the NASA transit-depth uncertainties) alongside reference areas and lines for the science-band
   annotations.
+- **AG Grid** (`ag-grid-community`) for the interactive spreadsheet view of the raw inventory, with
+  sort, filter, column show/hide, row selection, and CSV export. It is restyled entirely through CSS
+  variables so it matches the Material palette in light and dark.
 
 ## Views
 
@@ -52,9 +55,13 @@ The app makes this distinction obvious so a MAST demo is never mistaken for a re
    technosignature target window (8.6 to 11.8 micrometres) and the ozone feature (near 9.6
    micrometres). The reference (bibcode) and source for the selected spectrum are shown below, along
    with the population panel for that source (see below).
-2. **Dataset overview**: summary counts (spectra, planets or targets, spectral points) and the
+2. **Dataset**: a full, raw read of the active source's inventory CSV, with a switch between a clean
+   sortable table (with pagination and CSV export) and an interactive AG Grid spreadsheet (sort,
+   filter, column show/hide, row selection, per-column highlight, CSV export). The columns specific
+   to the transmission-spectroscopy study are highlighted.
+3. **Dataset overview**: summary counts (spectra, planets or targets, spectral points) and the
    planet or target list with references and wavelength coverage, for the active source.
-3. **Data dictionary**: provenance for the active source plus each real CSV column with a
+4. **Data dictionary**: provenance for the active source plus each real CSV column with a
    plain-language description.
 
 ## Populating data from inside the app
@@ -127,15 +134,20 @@ There is no separate data-prep step to run: the API routes under `src/app/api` r
 
 ```
 frontend/
+  docs/                    working documentation (design system, UI/UX, architecture, API reference)
+  .claude/                 frontend-scoped agent rules (design/UX and engineering)
+  CLAUDE.md / GEMINI.md    always-on agent context for Claude Code / Antigravity
   src/
     app/
-      api/                 route handlers: live dataset reads, NASA upload, MAST catalog/dry-run/download, job polling
+      api/                 route handlers: built and raw dataset reads, NASA upload, MAST catalog/dry-run/download, job polling
       ...                  Next.js App Router (layout, page, global styles)
-    components/            UI components (toggle, tabs, chart, views, population panels)
+    components/            UI components (toggle, tabs, chart, the four views, population panels)
     lib/
-      server/              Node-only: CSV parsing, dataset building, path constants, the job runner
-      ...                  theme, types, content, science bands, formatting, client data-fetching hook
+      server/              Node-only: CSV parsing, the IPAC .tbl parser, dataset building, path constants, the job runner
+      ...                  theme, types, content, science bands, formatting, raw-column highlights, data-fetching hooks
 ```
+
+Full developer documentation lives in [docs/](docs/); start at [docs/README.md](docs/README.md).
 
 ## Notes
 

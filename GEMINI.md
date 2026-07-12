@@ -144,3 +144,8 @@ If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is 
   [frontend/GEMINI.md](frontend/GEMINI.md); frontend rules in
   [.agents/rules/frontend.md](.agents/rules/frontend.md); full description in
   [frontend/README.md](frontend/README.md).
+  **When implementing a ticket or code change that deals with the frontend, move into `frontend/`
+  first and read its own context there before starting: [frontend/GEMINI.md](frontend/GEMINI.md),
+  [frontend/.claude/](frontend/.claude/) (the frontend-scoped design and engineering rules, which are
+  agent-neutral in content), and [frontend/docs/](frontend/docs/) (the full documentation set). Do
+  not work on the frontend from the repository root alone.**

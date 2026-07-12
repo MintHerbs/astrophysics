@@ -1,27 +1,30 @@
-/** Columns from the raw inventory CSVs that feed the transmission-spectroscopy study directly. */
+/**
+ * Columns from the raw inventory CSVs that feed the transmission-spectroscopy
+ * study directly. These are highlighted in purple in the Dataset view.
+ *
+ * The match is case-sensitive and by exact header name, so each entry must
+ * match a real header of the CSV that /api/dataset/raw serves for that source:
+ *  - NASA:  data/NASA_Archive/spectra.csv  (upper-case archive-export headers)
+ *  - MAST:  data/MAST/mast_miri_inventory.csv  (lower-case headers)
+ * If those headers change, update these lists to match, or the highlight is a
+ * no-op.
+ */
 
 export const NASA_HIGHLIGHTS = [
-  "pl_name",
-  "pl_trandep",
-  "pl_trandur",
-  "pl_rade",
-  "star_radius_sun",
-  "star_temp_k",
-  "star_surface_gravity",
-  "pl_eqt",
-  "star_vmag",
-  "star_jmag",
-  "star_hmag",
-  "star_kmag",
+  "PL_NAME",
+  "SPEC_TYPE",
+  "INSTRUMENT",
+  "MINWAVELNG",
+  "MAXWAVELNG",
+  "NUM_DATAPOINTS",
+  "BIBCODE",
 ];
 
 export const MAST_HIGHLIGHTS = [
-  "WAVELENGTH",
-  "TRANSIT_DEPTH",
-  "FLUX",
-  "ERR",
-  "FLUX_ERROR",
-  "INSTRUMENT",
-  "FILTER",
-  "GRATING",
+  "target_name",
+  "instrument_name",
+  "observation_mode",
+  "filter_disperser",
+  "wavelength_min_um",
+  "wavelength_max_um",
 ];

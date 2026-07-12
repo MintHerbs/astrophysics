@@ -15,17 +15,22 @@ export const REPO_ROOT = path.resolve(FRONTEND_DIR, "..");
 export const DATA_DIR = path.join(REPO_ROOT, "data");
 
 export const NASA_DIR = path.join(DATA_DIR, "NASA_Archive");
-export const NASA_INVENTORY_CSV = path.join(NASA_DIR, "nasa_miri_spectra.csv");
-export const NASA_POINTS_CSV = path.join(NASA_DIR, "nasa_miri_spectra_points.csv");
 export const NASA_RAW_DIR = path.join(NASA_DIR, "raw");
 export const NASA_BUILD_SCRIPT = path.join(NASA_DIR, "build_nasa_spectra_dataset.py");
 
 /**
- * Local archive dump: a TAP export of the Atmospheric Spectroscopy table
+ * Local archive dump: a Firefly export of the Atmospheric Spectroscopy table
  * (spectra.csv) alongside the per-spectrum .tbl files it references, placed
  * directly under NASA_DIR (not the raw/ upload folder above). This is the
- * live source for the viewer; each spectrum's points are parsed from its
- * .tbl file on every request rather than pre-built into a CSV.
+ * single NASA catalogue the frontend reads: the built dataset (buildNasa) and
+ * the raw Dataset tab (/api/dataset/raw) both use it, and each spectrum's
+ * points are parsed from its .tbl file on every request rather than pre-built
+ * into a CSV.
+ *
+ * Note: the standalone Python pipeline (fetch_nasa_miri_spectra.py and
+ * build_nasa_spectra_dataset.py) maintains a separate programmatic inventory,
+ * nasa_miri_spectra.csv, and a nasa_miri_spectra_points.csv. The frontend does
+ * not read those; it is driven entirely by spectra.csv plus the .tbl files.
  */
 export const NASA_SPECTRA_CSV = path.join(NASA_DIR, "spectra.csv");
 
