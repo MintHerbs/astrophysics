@@ -50,7 +50,10 @@ catalogue produced. Cache raw products under an ignored local `data/` path. Raw 
 committed (see below). Note that the archives often list several published reductions of a single
 transit (different pipelines, for example WASP-39 b); these are not independent transits, and
 combining spectra must distinguish the two cases (see [02-methodology.md](02-methodology.md) and
-[08-review-and-gaps.md](08-review-and-gaps.md) S5).
+[08-review-and-gaps.md](08-review-and-gaps.md) S5). Verified count: the current MIRI transmission
+sample is 9 planets and 9 independent transits, not the raw 24-row archive count; see
+[../data/README.md](../data/README.md) and [../spec/data-sourcing-spec.md](../spec/data-sourcing-spec.md)
+for the per-planet evidence.
 
 ## Stream 2: synthetic training spectra (the labels)
 
@@ -68,6 +71,13 @@ Tools and databases:
 
 These opacity tables and cross-section databases are large and fetched separately; they are not
 committed.
+
+CFC-11, CFC-12, and SF6 are HITRAN cross-section species, not line lists (see M2), and petitRADTRANS's
+documented custom-opacity routes (ExoMol, DACE, ExoCross) are all built around line-list-derived
+opacities; none of them is a direct import path for HITRAN's own cross-section format. Loading these
+three gases needs a purpose-written HITRAN-cross-section-to-petitRADTRANS converter, not an assumed
+by-product of "custom opacity species" support. See
+[08-review-and-gaps.md](08-review-and-gaps.md) S6.
 
 ## Benchmark
 
