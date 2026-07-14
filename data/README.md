@@ -57,6 +57,31 @@ the run date and will grow as new programmes are released.
 Every row is real data returned by the query. No rows, planet names, wavelengths, or values were
 invented. Both queries returned data in this environment.
 
+## Independent transits behind the published-spectrum count (verified 2026-07-14)
+
+The 24 NASA archive rows and the 176 MAST rows both overstate the usable real sample: most of the
+duplication is repeat pipeline reductions of the same transit or non-science companion exposures
+(background or parallel imaging), not independent data. Cross-referencing each NASA archive planet
+against its MAST proposal and visit structure, using the proposals' own APT exports from STScI's
+Program Information system and the cached raw spectrum files under `NASA_Archive/raw/`, gives:
+
+**9 planets, 9 independent MIRI transits.** Every planet in the NASA archive's MIRI-transmission table
+reduces to exactly one independent transit, with two corrections worth recording:
+
+- WASP-107 b's two NASA-archive bibcodes (Dyrek et al., 2024; Welbanks et al., 2024) are the same
+  transit, not two. Welbanks et al. (2024) states directly that it incorporates Dyrek's published MIRI
+  data rather than observing a new transit (arXiv:2405.11018); their own new observations were NIRCam
+  only.
+- Short MAST rows that look like extra transits are not: K2-18 b's 124-second row and LTT 3780 c's
+  67-second row are dedicated background exposures (confirmed from the proposals' pointing-offset
+  Special Requirements and their sequencing with the main transit), and WASP-39 b's 160-second row is
+  a parallel MIRI imaging product, not a spectrum (confirmed by its product URI and calibration level).
+
+One open item: K2-22 b has three separate MAST visits (three different calendar dates, proposal 3315),
+but only one has a published NASA-archive reduction. The other two may hold usable real transit data
+this index would currently miss, since it only surfaces what has been published. Full evidence chain,
+per-planet table, and sources: [spec/data-sourcing-spec.md](../spec/data-sourcing-spec.md).
+
 ## Regenerating the inventories
 
 Requirements: Python 3.11 or newer, with `astroquery` and `astropy` (for MAST), and `pandas` and

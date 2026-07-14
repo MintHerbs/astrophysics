@@ -41,7 +41,8 @@ Checked against primary sources, not memory:
   conversion; default grid 80 to 3000 K); PandExo supports MIRI LRS and has been paired with
   petitRADTRANS. NF3 was added to HITRAN2020; CFC-11, CFC-12, and SF6 are provided as experimental
   cross-sections ([petitRADTRANS](https://www.aanda.org/articles/aa/full_html/2019/07/aa35470-19/aa35470-19.html),
-  [HITRAN cross-sections](https://hitran.org/xsc/)).
+  [HITRAN cross-sections](https://hitran.org/xsc/)). This is directionally correct but understates the
+  conversion effort for the three cross-section species; see S6.
 - **The novelty claim holds.** Detectability theory exists (Lin et al. 2014; Haqq-Misra et al. 2022;
   Schwieterman et al. 2024), but no systematic empirical upper-limit search of the real JWST archive
   has been published. "First empirical upper-limit catalogue" is defensible.
@@ -136,7 +137,11 @@ synthetic data, fully inherits the simulation-to-real gap that nested sampling a
 
 **Fix:** say "no training gap" for nested sampling and state NPE model misspecification as an explicit
 risk, mitigated by the cross-check and by simulation-based-inference coverage diagnostics (for example
-coverage tests, simulation-based calibration, or TARP). Applied in [02-methodology.md](02-methodology.md).
+coverage tests, simulation-based calibration (Talts et al., 2018), or TARP (Lemos et al., 2023)).
+Vasist et al. (2023), already a project reference, validates this same NPE-plus-petitRADTRANS
+combination the same way: coverage diagnostics against synthetic ground truth, cross-checked against
+classical nested sampling, never against unlabelled real data. Applied in
+[02-methodology.md](02-methodology.md).
 
 ### S4. The wavelength inclusion criterion, if coded against archive metadata, silently excludes everything
 
@@ -157,6 +162,30 @@ Averaging reductions is a different and more fraught operation than co-adding ge
 
 **Fix:** separate the two cases: choose or model across reductions, versus weighted co-adding of
 genuine repeat transits. Applied in [02-methodology.md](02-methodology.md) and
+[04-data-sources.md](04-data-sources.md).
+
+### S6. petitRADTRANS's custom-opacity routes do not natively ingest HITRAN's cross-section format
+
+Found 2026-07-14, during a data-sourcing and forward-model tooling review (see
+[../spec/data-sourcing-spec.md](../spec/data-sourcing-spec.md)). The "tools support the plan" entry
+above is correct that petitRADTRANS accepts custom opacities, but is optimistic about how directly:
+CFC-11, CFC-12, and SF6 are HITRAN cross-section species (tabulated absorption cross-section against
+wavenumber, temperature, and pressure), not line lists, because their spectra are too dense for
+line-by-line representation. petitRADTRANS's four documented custom-opacity routes, ExoMol tables
+(plug-and-play), DACE cross-section grids, ExoCross-converted line lists, or a hand-written line list
+run through `format2petitradtrans()`, are all built around line-list-derived opacities. None is a
+direct import path for HITRAN's own cross-section format. NF3, which has a genuine HITRAN2020 line
+list, is the one target gas that likely fits the documented ExoCross pathway directly.
+
+petitRADTRANS does support a custom Python load function for arbitrary opacity tables, so the gas is
+representable, but loading CFC-11, CFC-12, and SF6 needs a purpose-written
+HITRAN-cross-section-to-petitRADTRANS converter. No published precedent exists for this exact
+integration: the technosignature detectability literature this project already cites for these gases
+(Seager et al., 2023; Schwieterman et al., 2024) used the Planetary Spectrum Generator, not
+petitRADTRANS.
+
+**Fix:** track the HITRAN-cross-section converter as its own implementation task rather than an
+assumed by-product of "custom opacity species" support. Applied in
 [04-data-sources.md](04-data-sources.md).
 
 ## Minor findings
@@ -189,6 +218,7 @@ genuine repeat transits. Applied in [02-methodology.md](02-methodology.md) and
 | S3 | [02-methodology.md](02-methodology.md): training-gap wording; NPE risk and mitigations |
 | S4 | [03-pipeline-overview.md](03-pipeline-overview.md), [04-data-sources.md](04-data-sources.md): wavelength cut keys off mode |
 | S5 | [02-methodology.md](02-methodology.md), [04-data-sources.md](04-data-sources.md): reductions vs transits |
+| S6 | [04-data-sources.md](04-data-sources.md): HITRAN-cross-section-to-petitRADTRANS converter needed for CFC-11, CFC-12, SF6 |
 | M2 | [02-methodology.md](02-methodology.md): "cross-sections and line lists" |
 | M3 | [04-data-sources.md](04-data-sources.md), [05-glossary.md](05-glossary.md): null-control wording |
 | M4 | [../README.md](../README.md): add `data/` to layout |
@@ -214,4 +244,11 @@ blocks edits to `docs.txt`, and a `pre-commit` hook that blocks committing chang
 - TRAPPIST-1 b MIRI eclipse photometry: Nature Astronomy 2024. <https://doi.org/10.1038/s41550-024-02428-z>
 - MIRI LRS documentation. <https://jwst-docs.stsci.edu/jwst-mid-infrared-instrument/miri-observing-modes/miri-low-resolution-spectroscopy>
 - HITRAN2020, Gordon et al. 2022, JQSRT 277, 107949; cross-section search. <https://hitran.org/xsc/>
+- HITRAN cross-section definitions. <https://hitran.org/docs/cross-sections-definitions/>
 - petitRADTRANS, Mollière et al. 2019, A&A 627, A67. <https://www.aanda.org/articles/aa/full_html/2019/07/aa35470-19/aa35470-19.html>
+- petitRADTRANS: adding opacities documentation. <https://petitradtrans.readthedocs.io/en/latest/content/adding_opacities.html>
+- Vasist et al. 2023, A&A 672, A147. <https://doi.org/10.1051/0004-6361/202245263>
+- Talts et al. 2018, Validating Bayesian inference algorithms with simulation-based calibration. <https://arxiv.org/abs/1804.06788>
+- Lemos et al. 2023, Sampling-based accuracy testing of posterior estimators for general inference (TARP), PMLR 202, 19256-19273. <https://arxiv.org/abs/2302.03026>
+- Welbanks et al. 2024, Nature 630, 836. <https://arxiv.org/abs/2405.11018>
+- JWST Program Information (STScI), proposals 2722 and 3557 (APT exports). <https://www.stsci.edu/jwst-program-info/>
